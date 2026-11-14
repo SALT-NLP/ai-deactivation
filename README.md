@@ -1,2 +1,2 @@
-# ai-deactivation
-RCT on the Effect of AI Deactivation on Users' Psychological and Social Well-Being
+# AI Deactivation Reduces Loneliness and Increases Social Interaction
+
