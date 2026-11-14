@@ -1,0 +1,175 @@
+---
+title: "Primary Analyses"
+format: html
+editor: visual
+---
+
+# Primary Analyses for "AI Deactivation Reduces Loneliness and Increases Social Interaction"
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(readr)
+library(lmerTest)
+library(lme4)
+library(ggplot2)
+library(mediation)
+library(emmeans)
+library(performance)
+library(stargazer)
+library(lavaan)
+```
+### Data
+Load and preprocess the collected data
+
+```{r}
+DATA_DIR <- "../data/"
+
+wide_df <- read.csv(file.path(DATA_DIR, "participant_data.csv"), check.names = TRUE)
+long_df <- read.csv(file.path(DATA_DIR, "participant_data_long.csv"), check.names = TRUE)
+```
+
+```{r}
+# Collapse the sparse demographic levels that would otherwise be singleton cells.
+collapse_levels <- function(x, other, other_label = "Other") {
+  x <- as.character(x)
+  factor(ifelse(x %in% other, other_label, x))
+}
+
+wide_df <- wide_df %>%
+  mutate(
+    baseline_treatment = ifelse(baseline_treatment == "True", 1, 0),
+    treatment = as_treatment(baseline_treatment),
+    wave      = factor(wave),
+    baseline_Gender = collapse_levels(baseline_Gender, c("2", "4")),
+    baseline_Race   = collapse_levels(baseline_Race,   c("3", "4", "5", "6", "7")),
+    Relationship = factor(
+      case_when(
+        baseline_Relationship == 0                ~ "Single",
+        baseline_Relationship %in% c(1, 2, 3)     ~ "In Relationship",
+        baseline_Relationship %in% c(4, 5, 6, 7)  ~ "Other",
+        TRUE                                      ~ NA_character_
+      ),
+      levels = c("Single", "In Relationship", "Other")
+    )
+  )
+```
+
+### Helper Functions
+Add helper function to rescale to baseline standard deviation
+```{r}
+dvs <- unique(c(
+  "loneliness", 
+  "wb", 
+  "esi", 
+  "BPNSFS_Autonomy",   
+  "BPNSFS_Competence",
+  "BPNSFS_Relatedness", 
+  "lubben", "social_satisfaction", "ppl_met_inperson",
+  "problematic_use", "belief", 
+  "is_weekend", "date_since_start"
+))
+
+# Every wave from randomization through the end of the deactivation window.
+# The post-resumption wave lives in "Post Analyses.qmd", not here.
+timepoints    <- c("baseline", "diary1", "midline", "diary2", "endline")
+baseline_covs <- c("Age", "Gender", "EdLevel", "Income", "Race")
+other_covs    <- c("Tenure", "Usage", "Social", "Productivity", "Relationship", "Novelty", "Entertainment", "isProductivityMain", "isSocialMain")
+
+sd_table <- function(stats) {
+  data.frame(
+    outcome       = names(stats),
+    baseline_mean = vapply(stats, `[[`, numeric(1), "mean"),
+    baseline_sd   = vapply(stats, `[[`, numeric(1), "sd"),
+    n_baseline    = vapply(stats, `[[`, numeric(1), "n"),
+    row.names     = NULL
+  )
+}
+
+# Rescale `vars` in `data` using `stats`, the moments of the pre-deactivation rows.
+rescale_to_baseline <- function(data, vars, stats) {
+  for (v in vars) {
+    s <- stats[[v]]["sd"]
+    if (is.na(s) || s == 0) next        # no usable baseline -> leave in raw units
+    data[[v]] <- as.vector((data[[v]] - stats[[v]]["mean"]) / s)
+  }
+  data
+}
+
+z_vars <- setdiff(dvs, c("date_since_start", "is_weekend"))
+
+long_stats <- lapply(z_vars, function(v) baseline_moments(long[[v]][long$time == "baseline"]))
+names(long_stats) <- z_vars
+
+long_z <- rescale_to_baseline(long, z_vars, long_stats)
+
+# Reference table: what "1 SD" means for each outcome.
+sd_table(long_stats)
+```
+
+Helper functions for fitting statistical models
+
+```{r}
+person_covs <- c("wave", "baseline_Age", "baseline_Gender", "baseline_Race",
+                 "baseline_EdLevel", "baseline_Income", "Relationship",
+                 "Tenure", "Usage", "Social", "Productivity")
+
+controls        <- paste(c(person_covs, "is_weekend"), collapse = " + ")
+
+re_pid  <- "(1 | pid)"
+
+# Random slopes make the likelihood harder to optimize; bobyqa with a raised
+# iteration cap converges where the default nloptwrap reports false positives.
+lmer_ctrl <- lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e5))
+
+fit_primary <- function(dv, data = long_z) {
+  lmer(reformulate(c("treatment * isDeactivation", controls, re_pid), response = dv),
+       data = data, control = lmer_ctrl)
+}
+```
+
+## Results
+### Primary Outcomes
+These models correspond to outcomes reported in Sec. 2.1 in the main body of the paper.
+#### ESI
+```{r}
+summary(fit_primary("esi"))
+```
+#### Psychological Well-Being
+```{r}
+# Using the Comprehensive Inventory of Thriving
+summary(fit_primary("wb"))
+```
+```{r}
+# Using BPNSFS
+summary(fit_primary("BPNSFS_Autonomy"))
+summary(fit_primary("BPNSFS_Competence"))
+summary(fit_primary("BPNSFS_Relatedness"))
+```
+#### Loneliness
+```{r}
+summary(fit_primary("loneliness"))
+```
+
+### Secondary Outcomes
+These models correspond to outcomes reported in Sec. 2.1 in the main body of the paper.
+#### Social Behaviors
+```{r}
+summary(fit_primary("lubben"))
+```
+```{r}
+summary(fit_primary("social_satisfaction"))
+```
+```{r}
+summary(fit_primary("ppl_met_inperson"))
+```
+
+### Mediation Analysis
+The analyses correspond to the results reported in Sec. 2.2. 
+
+### Moderators
+The analyses correspond to the results reported in Sec. 2.3.
+```{r}
+
+```
+
