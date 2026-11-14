@@ -27,6 +27,7 @@ DATA_DIR <- "../data/"
 
 wide_df <- read.csv(file.path(DATA_DIR, "participant_data.csv"), check.names = TRUE)
 long_df <- read.csv(file.path(DATA_DIR, "participant_data_long.csv"), check.names = TRUE)
+eod_df <- read.csv(file.path(DATA_DIR, "participant_data_eod.csv"), check.names = TRUE)
 ```
 
 ```{r}
@@ -54,6 +55,8 @@ wide_df <- wide_df %>%
     )
   )
 ```
+
+
 
 ### Helper Functions
 Add helper function to rescale to baseline standard deviation
@@ -106,6 +109,17 @@ long_z <- rescale_to_baseline(long, z_vars, long_stats)
 # Reference table: what "1 SD" means for each outcome.
 sd_table(long_stats)
 ```
+```{r}
+eod_z_vars <- c("esi", "happy", "depressed", "anxious",
+                "time_worked", "time_socializing", "log_num_interactions")
+
+eod_stats <- lapply(eod_z_vars, function(v) {
+  baseline_moments(eod_z[[v]][eod_z$days_since_start == 0])
+})
+names(eod_stats) <- eod_z_vars
+
+eod_z <- rescale_to_baseline(eod_z, eod_z_vars, eod_stats)
+```
 
 Helper functions for fitting statistical models
 
@@ -117,13 +131,23 @@ person_covs <- c("wave", "baseline_Age", "baseline_Gender", "baseline_Race",
 controls        <- paste(c(person_covs, "is_weekend"), collapse = " + ")
 
 re_pid  <- "(1 | pid)"
-
+re_long <- "(1 + days_since_start | pid)"
 # Random slopes make the likelihood harder to optimize; bobyqa with a raised
 # iteration cap converges where the default nloptwrap reports false positives.
 lmer_ctrl <- lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e5))
 
 fit_primary <- function(dv, data = long_z) {
   lmer(reformulate(c("treatment * isDeactivation", controls, re_pid), response = dv),
+       data = data, control = lmer_ctrl)
+}
+
+fit_eod_primary <- function(dv, data = eod_z) {
+  lmer(reformulate(c("treatment * isDeactivation", controls, re_pid), response = dv),
+       data = data, control = lmer_ctrl)
+}
+
+fit_eod_days <- function(dv, data = eod_z) {
+  lmer(reformulate(c("treatment * days_since_start", controls, re_long), response = dv),
        data = data, control = lmer_ctrl)
 }
 ```
@@ -164,12 +188,52 @@ summary(fit_primary("social_satisfaction"))
 summary(fit_primary("ppl_met_inperson"))
 ```
 
-### Mediation Analysis
-The analyses correspond to the results reported in Sec. 2.2. 
+### Daily Outcomes
+These analyses are reported in Sec. 2.1, drawn from participants' daily surveys. 
+
+#### Emotional State
+```{r}
+summary(fit_eod_primary("esi"))
+summary(fit_eod_days("esi"))
+```
+#### Time Socializing
+```{r}
+summary(fit_eod_primary("time_socializing"))
+summary(fit_eod_days("time_socializing"))
+```
+#### Time Worked
+```{r}
+summary(fit_eod_primary("time_worked"))
+summary(fit_eod_days("time_worked"))
+```
+
+#### Number of Interactions (Log)
+```{r}
+summary(fit_eod_primary("log_num_interactions"))
+summary(fit_eod_days("log_num_interactions"))
+```
 
 ### Moderators
 The analyses correspond to the results reported in Sec. 2.3.
 ```{r}
+fit_moderator <- function(dv, moderator, data = long_z) {
+  lmer(
+    reformulate(
+      c(paste0("treatment * isDeactivation * ", moderator),
+        controls, re_pid),
+      response = dv
+    ),
+    data = data,
+    control = lmer_ctrl
+  )
+}
+```
 
+```{r}
+summary(fit_moderator("loneliness", "Usage"))
+```
+
+```{r}
+summary(fit_moderator("loneliness", "Tenure"))
 ```
 
