@@ -21,6 +21,7 @@ library(sandwich)
 ```
 
 ### Data
+
 Load and preprocess the collected data
 
 ```{r}
@@ -42,6 +43,11 @@ controls <- paste(c(person_covs), collapse = " + ")
 collapse_levels <- function(x, other, other_label = "Other") {
   x <- as.character(x)
   factor(ifelse(x %in% other, other_label, x))
+}
+
+as_treatment <- function(x) {
+  factor(ifelse(as.logical(x), "Deactivation", "Control"),
+         levels = c("Control", "Deactivation"))
 }
 
 df <- wide_df %>%
@@ -88,7 +94,9 @@ rescale_to_baseline <- function(data, vars, stats) {
 baseline_stats <- list()
 df_z <- df
 df_z$baseline_Usage <- df_z$Usage
-dvs <- c("loneliness", "esi", "wb", "BPNSFS_Autonomy", "BPNSFS_Competence", "BPNSFS_Relatedness", "problematic_use", "intensity", "Usage")
+dvs <- c("loneliness", "esi", "wb", "BPNSFS_Autonomy", "BPNSFS_Competence", 
+         "BPNSFS_Relatedness", "problematic_use", "intensity", "Usage", 
+         "lubben", "social_satisfaction", "ppl_met_inperson")
 z_vars <- setdiff(dvs, c("date_since_start", "is_weekend"))
 
 for (v in z_vars) {
@@ -115,19 +123,18 @@ baseline_sd_table <- data.frame(
 
 ```
 
-
 ```{r}
 df_z$log_approvals <- log1p(df$Total.approvals)
 ```
 
 ### IPW ANCOVA for Baseline to Endline
+
 ```{r}
 m1 <- glm(
   completed_endline ~ baseline_treatment + wave 
     + baseline_Age + baseline_Gender 
     + baseline_Race + baseline_EdLevel 
     + baseline_Income + Relationship + baseline_loneliness + baseline_esi + baseline_wb
-    + baseline_lubben + baseline_social_satisfaction + baseline_ppl_met_inperson
     + Tenure + Usage + Social + Productivity + baseline_intensity 
     + baseline_problematic_use + log_approvals,
   data = df_z,
@@ -153,8 +160,6 @@ summary(df_z$ipw)
 summary(m1)
 ```
 
-
-
 ```{r}
 fit_primary_ipw <- function(dv, data = df_z) {
   model <- lm(
@@ -166,21 +171,33 @@ fit_primary_ipw <- function(dv, data = df_z) {
     weights = ipw
   )
 
-  print(summary(model))
-
   # HC3 robust standard errors
-  print(lmtest::coeftest(
+  robust <- print(lmtest::coeftest(
     model,
     vcov. = sandwich::vcovHC(model, type = "HC3")
   ))
 
-  invisible(model)
+term <- grep("^baseline_treatment", rownames(robust), value = TRUE)
+
+beta <- robust[term, "Estimate"]
+se   <- robust[term, "Std. Error"]
+p    <- robust[term, "Pr(>|t|)"]
+
+# 95% CI using robust SE and residual degrees of freedom
+crit <- qt(0.975, df = df.residual(model))
+ci <- beta + c(-1, 1) * crit * se
+
+cat(sprintf(
+  "%s & %.3f & %.3f & [%.3f, %.3f] & %.3f \\\\\n",
+  dv, beta, se, ci[1], ci[2], p
+))
 }
 ```
 
 #### Primary Outcomes
+
 ```{r}
-fit_primary_ipw("loneliness")
+fit_primary_ipw("esi")
 ```
 
 ```{r}
@@ -190,9 +207,11 @@ fit_primary_ipw("wb")
 ```{r}
 fit_primary_ipw("BPNSFS_Autonomy")
 ```
+
 ```{r}
 fit_primary_ipw("BPNSFS_Competence")
 ```
+
 ```{r}
 fit_primary_ipw("BPNSFS_Relatedness")
 ```
@@ -200,17 +219,23 @@ fit_primary_ipw("BPNSFS_Relatedness")
 ```{r}
 fit_primary_ipw("loneliness")
 ```
+
 #### Secondary Outcomes
+
 ```{r}
 fit_primary_ipw("lubben")
 ```
+
 ```{r}
 fit_primary_ipw("ppl_met_inperson")
 ```
+
 ```{r}
 fit_primary_ipw("social_satisfaction")
 ```
+
 ### Instrumental Variables Regression
+
 ```{r}
 
 fit_late_ipw <- function(
@@ -252,21 +277,49 @@ fit_late_ipw <- function(
   print(robust)
 
   invisible(model)
+  term <- grep("^days_deactivated", rownames(robust), value = TRUE)
+
+  beta <- robust[term, "Estimate"]
+  se   <- robust[term, "Std. Error"]
+  p    <- robust[term, "Pr(>|t|)"]
+
+  # 95% CI using robust SE and residual degrees of freedom
+  crit <- qt(0.975, df = df.residual(model))
+  ci <- beta + c(-1, 1) * crit * se
+
+  cat(sprintf(
+    "%s & %.3f & %.3f & [%.3f, %.3f] & %.3f \\\\\n",
+    dv, beta, se, ci[1], ci[2], p
+  ))
 }
 ```
 
 ```{r}
 m_loneliness <- fit_late_ipw("loneliness")
+```
+
+```{r}
 m_esi <- fit_late_ipw("esi")
+```
+
+```{r}
 m_wb <- fit_late_ipw("wb")
+```
+
+```{r}
+fit_late_ipw("BPNSFS_Relatedness")
+fit_late_ipw("BPNSFS_Competence")
+fit_late_ipw("BPNSFS_Autonomy")
 ```
 
 ```{r}
 fit_late_ipw("lubben")
 ```
+
 ```{r}
 fit_late_ipw("social_satisfaction")
 ```
+
 ```{r}
 fit_late_ipw("ppl_met_inperson")
 ```

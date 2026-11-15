@@ -82,7 +82,6 @@ standardize_to_baseline <- function(d, vars, stats, also_prefixed = character())
 ```{r}
 DATA_DIR <- "../data/"
 df <- read.csv(file.path(DATA_DIR, "participant_data.csv"), check.names = TRUE)
-imp <- readRDS(file.path(DATA_DIR, "mice_imp.rds"))
 long_df <- read.csv(file.path(DATA_DIR, "participant_data_long.csv"), check.names = TRUE)
 ```
 
@@ -227,7 +226,8 @@ summary(fit_primary("ppl_met_inperson"))
 
 ## MICE
 ```{r}
-followup_cols <- paste0(c("diary1", "midline", "diary2", "endline"), "_loneliness")
+# Intention-to-treat: every randomized participant is imputed, including those
+# with no follow-up data.
 df_mi <- df
 cat("MI sample:", nrow(df_mi), "of", nrow(df), "participants\n")
 ```
@@ -240,6 +240,10 @@ mi_dvs <- c("loneliness", "lubben", "social_satisfaction",
 mi_dv_cols <- unlist(lapply(timepoints, function(tp) paste0(tp, "_", mi_dvs)))
 mi_dv_cols <- intersect(mi_dv_cols, names(df_mi))
 
+# is_weekend is a model covariate and is missing exactly when a visit was skipped,
+# so it has to be imputed too; otherwise lmer drops every imputed row.
+mi_design_cols <- paste0(timepoints, "_is_weekend")
+
 mi_numeric_covs <- c("baseline_treatment", "wave",
                      "Tenure", "Usage", "Social", "Productivity",
                      "baseline_intensity", "baseline_problematic_use",
@@ -249,12 +253,18 @@ mi_factor_covs  <- c("baseline_Gender", "baseline_Race", "baseline_Relationship"
 imp_data <- df_mi %>%
   transmute(
     pid,
-    baseline_treatment = factor(baseline_treatment, levels = c(0, 1)),   # "True"/"False" -> 1/0
+    baseline_treatment,                                    # 0/1, fully observed
     wave               = as.numeric(as.character(wave)),
     across(all_of(setdiff(mi_numeric_covs, c("baseline_treatment", "wave")))),
     across(all_of(mi_factor_covs), factor),                # mice dummy-codes these
-    across(all_of(mi_dv_cols))
+    across(all_of(mi_dv_cols)),
+    across(all_of(mi_design_cols))
   )
+
+# Midline always fell on a weekday (every observed value is 0), so a skipped midline
+# would have too. mice skips constant columns, so fill it directly.
+stopifnot(all(imp_data$midline_is_weekend == 0, na.rm = TRUE))
+imp_data$midline_is_weekend[is.na(imp_data$midline_is_weekend)] <- 0
 
 cat("imputation frame:", nrow(imp_data), "rows x", ncol(imp_data), "columns\n")
 cat("columns with missing values:", sum(colSums(is.na(imp_data)) > 0), "\n")
@@ -263,25 +273,22 @@ cat("columns with missing values:", sum(colSums(is.na(imp_data)) > 0), "\n")
 ```{r}
 dry <- mice(imp_data, maxit = 0, printFlag = FALSE)
 
-meth <- dry$method
-meth[] 
-meth[colSums(is.na(imp_data)) > 0] 
-
+meth <- dry$method              # pmm for every incomplete column
 pred <- dry$predictorMatrix
-pred[, "pid"] <- 0 
+pred[, "pid"] <- 0
 
-table(meth)
+table(meth[colSums(is.na(imp_data)) > 0])
 ```
 
 ```{r}
-M_IMP      <- 20     # number of imputed datasets
+M_IMP      <- 5     # number of imputed datasets
 MAXIT_IMP  <- 20    # iterations of the chained-equation loop
 SEED_IMP   <- 55
 PMM_DONORS <- 5     # candidate donors per missing value
+IMP_PATH   <- file.path(DATA_DIR, "mice_imp.rds")
 
-# Uncomment to run the imputation process instead of loading it
-if (FALSE) {
-  imp <- mice(
+run_mice <- function() {
+  mice(
     imp_data,
     m               = M_IMP,
     maxit           = MAXIT_IMP,
@@ -290,7 +297,23 @@ if (FALSE) {
     donors          = PMM_DONORS,
     seed            = SEED_IMP,
     printFlag       = FALSE
-)
+  )
+}
+
+# Reuse the cached imputation only if it was built from exactly this imputation frame.
+imp_matches_frame <- function(imp) {
+  if (is.null(imp) || imp$m != M_IMP) return(FALSE)
+  if (!identical(names(imp$data), names(imp_data))) return(FALSE)
+  cached  <- imp$data[order(imp$data$pid), ]
+  current <- imp_data[order(imp_data$pid), ]
+  isTRUE(all.equal(cached, current, check.attributes = FALSE))
+}
+
+imp <- if (file.exists(IMP_PATH)) readRDS(IMP_PATH) else NULL
+if (!imp_matches_frame(imp)) {
+  message("Cached imputation is missing or stale; re-running mice (this takes a while).")
+  imp <- run_mice()
+  saveRDS(imp, IMP_PATH)
 }
 ```
 
@@ -298,22 +321,17 @@ if (FALSE) {
 person_covs <- df_mi %>%
   dplyr::select(pid, Relationship, baseline_Gender, baseline_Race)
 
-design_long <- df_mi %>%
-  dplyr::select(pid, all_of(paste0(rep(timepoints, each = 2), "_", design_vars))) %>%
-  pivot_longer(-pid,
-               names_to      = c("time", ".value"),
-               names_pattern = paste0("^(", paste(timepoints, collapse = "|"), ")_(.*)$"))
+mi_long_cols <- c(mi_dv_cols, mi_design_cols)
 
 imputed_long <- complete(imp, action = "long") %>%            # adds .imp and .id
   dplyr::select(.imp, pid, baseline_treatment, wave,
                 Tenure, Usage, Social, Productivity,
                 baseline_Age, baseline_EdLevel, baseline_Income,
-                all_of(mi_dv_cols)) %>%
-  pivot_longer(all_of(mi_dv_cols),
+                all_of(mi_long_cols)) %>%
+  pivot_longer(all_of(mi_long_cols),
                names_to      = c("time", ".value"),
                names_pattern = paste0("^(", paste(timepoints, collapse = "|"), ")_(.*)$")) %>%
   left_join(person_covs, by = "pid") %>%
-  left_join(design_long, by = c("pid", "time")) %>%
   mutate(
     treatment      = baseline_treatment == 1,
     isDeactivation = time != "baseline",
@@ -335,8 +353,12 @@ imputed_long_z    <- standardize_to_baseline(imputed_long, mi_dvs, baseline_stat
 ```{r}
 fit_and_pool <- function(dv) {
   fits <- lapply(split(imputed_long_z, imputed_long_z$.imp), function(d) {
-    lmer(reformulate(c("treatment * isDeactivation", controls, re_pid), response = dv),
-         data = d, control = lmer_ctrl)
+    fit <- lmer(reformulate(c("treatment * isDeactivation", controls, re_pid), response = dv),
+                data = d, control = lmer_ctrl)
+    # Only structurally unmeasured outcome rows (e.g. lubben at diary waves) may be
+    # dropped; every imputed row must reach the model.
+    stopifnot(nobs(fit) == sum(!is.na(d[[dv]])))
+    fit
   })
   pool(as.mira(fits))     # Rubin's rules, Barnard-Rubin df
 }
