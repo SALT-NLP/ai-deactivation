@@ -105,10 +105,10 @@ baseline_moments <- function(x) {
   c(mean = mean(x, na.rm = TRUE), sd = sd(x, na.rm = TRUE), n = sum(!is.na(x)))
 }
 
-long_stats <- lapply(z_vars, function(v) baseline_moments(long[[v]][long$time == "baseline"]))
+long_stats <- lapply(z_vars, function(v) baseline_moments(long_df[[v]][long_df$time == "baseline"]))
 names(long_stats) <- z_vars
 
-long_z <- rescale_to_baseline(long, z_vars, long_stats)
+long_z <- rescale_to_baseline(long_df, z_vars, long_stats)
 
 # Reference table: what "1 SD" means for each outcome.
 sd_table(long_stats)
@@ -118,11 +118,11 @@ eod_z_vars <- c("esi", "happy", "depressed", "anxious",
                 "time_worked", "time_socializing", "log_num_interactions")
 
 eod_stats <- lapply(eod_z_vars, function(v) {
-  baseline_moments(eod_z[[v]][eod_z$days_since_start == 0])
+  baseline_moments(eod_df[[v]][eod_df$days_since_start == 0])
 })
 names(eod_stats) <- eod_z_vars
 
-eod_z <- rescale_to_baseline(eod_z, eod_z_vars, eod_stats)
+eod_z <- rescale_to_baseline(eod_df, eod_z_vars, eod_stats)
 ```
 
 Helper functions for fitting statistical models
