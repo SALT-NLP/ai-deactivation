@@ -1,0 +1,272 @@
+---
+title: "Robustness Analyses"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(readr)
+library(lmerTest)
+library(lme4)
+library(ggplot2)
+library(emmeans)
+library(performance)
+library(stargazer)
+library(lavaan)
+library(ivreg)
+library(lmtest)
+library(sandwich)
+```
+
+### Data
+Load and preprocess the collected data
+
+```{r}
+DATA_DIR <- "../data/"
+
+wide_df <- read.csv(file.path(DATA_DIR, "participant_data.csv"), check.names = TRUE)
+long_df <- read.csv(file.path(DATA_DIR, "participant_data_long.csv"), check.names = TRUE)
+eod_df <- read.csv(file.path(DATA_DIR, "participant_data_eod.csv"), check.names = TRUE)
+
+person_covs <- c("wave", "baseline_Age", "baseline_Gender", "baseline_Race",
+                 "baseline_EdLevel", "baseline_Income", "Relationship",
+                 "Tenure", "Usage", "Social", "Productivity")
+
+controls <- paste(c(person_covs), collapse = " + ")
+```
+
+```{r}
+# Collapse the sparse demographic levels that would otherwise be singleton cells.
+collapse_levels <- function(x, other, other_label = "Other") {
+  x <- as.character(x)
+  factor(ifelse(x %in% other, other_label, x))
+}
+
+df <- wide_df %>%
+  mutate(
+    treatment = as_treatment(baseline_treatment),
+    wave      = factor(wave),
+    baseline_Gender = collapse_levels(baseline_Gender, c("2", "4")),
+    baseline_Race   = collapse_levels(baseline_Race,   c("3", "4", "5", "6", "7")),
+    Relationship = factor(
+      case_when(
+        baseline_Relationship == 0                ~ "Single",
+        baseline_Relationship %in% c(1, 2, 3)     ~ "In Relationship",
+        baseline_Relationship %in% c(4, 5, 6, 7)  ~ "Other",
+        TRUE                                      ~ NA_character_
+      ),
+      levels = c("Single", "In Relationship", "Other")
+    )
+  )
+
+df$completed_endline <- ifelse(tolower(df$completed_endline) == "true", 1, 0)
+
+sd_table <- function(stats) {
+  data.frame(
+    outcome       = names(stats),
+    baseline_mean = vapply(stats, `[[`, numeric(1), "mean"),
+    baseline_sd   = vapply(stats, `[[`, numeric(1), "sd"),
+    n_baseline    = vapply(stats, `[[`, numeric(1), "n"),
+    row.names     = NULL
+  )
+}
+
+# Rescale `vars` in `data` using `stats`, the moments of the pre-deactivation rows.
+rescale_to_baseline <- function(data, vars, stats) {
+  for (v in vars) {
+    s <- stats[[v]]["sd"]
+    if (is.na(s) || s == 0) next        # no usable baseline -> leave in raw units
+    data[[v]] <- as.vector((data[[v]] - stats[[v]]["mean"]) / s)
+  }
+  data
+}
+```
+
+```{r}
+baseline_stats <- list()
+df_z <- df
+df_z$baseline_Usage <- df_z$Usage
+dvs <- c("loneliness", "esi", "wb", "BPNSFS_Autonomy", "BPNSFS_Competence", "BPNSFS_Relatedness", "problematic_use", "intensity", "Usage")
+z_vars <- setdiff(dvs, c("date_since_start", "is_weekend"))
+
+for (v in z_vars) {
+  bcol <- paste0("baseline_", v)
+  pcol <- paste0("endline_", v)
+  if (!all(c(bcol, pcol) %in% names(df)) ||
+      !is.numeric(df[[bcol]]) || !is.numeric(df[[pcol]])) next
+  mu   <- mean(df[[bcol]], na.rm = TRUE)
+  sdev <- sd(df[[bcol]],   na.rm = TRUE)
+  if (is.na(sdev) || sdev == 0) next        # no usable baseline -> leave raw
+  df_z[[bcol]] <- (df[[bcol]] - mu) / sdev
+  df_z[[pcol]] <- (df[[pcol]] - mu) / sdev
+  baseline_stats[[v]] <- c(mean = mu, sd = sdev, n = sum(!is.na(df[[bcol]])))
+}
+
+# reference table: what "1 SD" means for each outcome
+baseline_sd_table <- data.frame(
+  outcome       = names(baseline_stats),
+  baseline_mean = vapply(baseline_stats, `[[`, numeric(1), "mean"),
+  baseline_sd   = vapply(baseline_stats, `[[`, numeric(1), "sd"),
+  n_baseline    = vapply(baseline_stats, `[[`, numeric(1), "n"),
+  row.names     = NULL
+)
+
+```
+
+
+```{r}
+df_z$log_approvals <- log1p(df$Total.approvals)
+```
+
+### IPW ANCOVA for Baseline to Endline
+```{r}
+m1 <- glm(
+  completed_endline ~ baseline_treatment + wave 
+    + baseline_Age + baseline_Gender 
+    + baseline_Race + baseline_EdLevel 
+    + baseline_Income + Relationship + baseline_loneliness + baseline_esi + baseline_wb
+    + baseline_lubben + baseline_social_satisfaction + baseline_ppl_met_inperson
+    + Tenure + Usage + Social + Productivity + baseline_intensity 
+    + baseline_problematic_use + log_approvals,
+  data = df_z,
+  family = binomial()
+)
+
+
+df_z$p1 <- predict(m1, newdata = df_z, type = "response")
+
+df_z <- subset(
+  df_z,
+  completed_endline == 1
+)
+
+df_z$ipw <- 1 / (
+  df_z$p1
+)
+
+summary(df_z$ipw)
+```
+
+```{r}
+summary(m1)
+```
+
+
+
+```{r}
+fit_primary_ipw <- function(dv, data = df_z) {
+  model <- lm(
+    reformulate(
+      c("baseline_treatment", paste0("baseline_", dv), controls),
+      response = paste0("endline_", dv)
+    ),
+    data = data,
+    weights = ipw
+  )
+
+  print(summary(model))
+
+  # HC3 robust standard errors
+  print(lmtest::coeftest(
+    model,
+    vcov. = sandwich::vcovHC(model, type = "HC3")
+  ))
+
+  invisible(model)
+}
+```
+
+#### Primary Outcomes
+```{r}
+fit_primary_ipw("loneliness")
+```
+
+```{r}
+fit_primary_ipw("wb")
+```
+
+```{r}
+fit_primary_ipw("BPNSFS_Autonomy")
+```
+```{r}
+fit_primary_ipw("BPNSFS_Competence")
+```
+```{r}
+fit_primary_ipw("BPNSFS_Relatedness")
+```
+
+```{r}
+fit_primary_ipw("loneliness")
+```
+#### Secondary Outcomes
+```{r}
+fit_primary_ipw("lubben")
+```
+```{r}
+fit_primary_ipw("ppl_met_inperson")
+```
+```{r}
+fit_primary_ipw("social_satisfaction")
+```
+### Instrumental Variables Regression
+```{r}
+
+fit_late_ipw <- function(
+    dv,
+    data = df_z,
+    exposure = "days_deactivated"
+) {
+
+  baseline <- paste0("baseline_", dv)
+  endline  <- paste0("endline_", dv)
+
+  covariates <- c(baseline, person_covs)
+
+  # IV formula:
+  # Outcome ~ exposure + covariates |
+  #           assignment + covariates
+
+  f <- as.formula(paste0(
+    endline, " ~ ",
+    exposure, " + ",
+    paste(covariates, collapse = " + "),
+    " | baseline_treatment + ",
+    paste(covariates, collapse = " + ")
+  ))
+
+  model <- ivreg(
+    formula = f,
+    data = data,
+    weights = ipw
+  )
+
+  # HC3 robust inference
+  robust <- lmtest::coeftest(
+    model,
+    vcov. = sandwich::vcovHC(model, type = "HC3")
+  )
+
+  print(summary(model, diagnostics = TRUE))
+  print(robust)
+
+  invisible(model)
+}
+```
+
+```{r}
+m_loneliness <- fit_late_ipw("loneliness")
+m_esi <- fit_late_ipw("esi")
+m_wb <- fit_late_ipw("wb")
+```
+
+```{r}
+fit_late_ipw("lubben")
+```
+```{r}
+fit_late_ipw("social_satisfaction")
+```
+```{r}
+fit_late_ipw("ppl_met_inperson")
+```

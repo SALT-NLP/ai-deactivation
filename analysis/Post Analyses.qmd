@@ -1,0 +1,393 @@
+---
+title: "Post Analyses"
+format: html
+editor: visual
+---
+
+# Post Analyses for "AI Deactivation Reduces Loneliness and Increases Social Interaction"
+We look at the changes between the follow-up survey and the baseline survey
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(readr)
+library(lmerTest)
+library(lme4)
+library(ggplot2)
+library(mediation)
+library(emmeans)
+library(performance)
+library(stargazer)
+library(lavaan)
+library(sandwich)
+library(lmtest)
+```
+
+```{r}
+DATA_DIR <- "../data/"
+
+df <- read.csv(file.path(DATA_DIR, "participant_data.csv"), check.names = TRUE)
+df$provide_metadata <- ifelse(tolower(df$provide_metadata) == "true", 1, 0)
+df$completed_endline <- ifelse(tolower(df$completed_endline) == "true", 1, 0)
+df$completed_post <- ifelse(tolower(df$completed_post) == "true", 1, 0)
+```
+
+```{r}
+# Collapse the sparse demographic levels that would otherwise be singleton cells.
+collapse_levels <- function(x, other, other_label = "Other") {
+  x <- as.character(x)
+  factor(ifelse(x %in% other, other_label, x))
+}
+
+df <- df %>%
+  mutate(
+    baseline_treatment = ifelse(baseline_treatment == "True", 1, 0),
+    treatment = as_treatment(baseline_treatment),
+    wave      = factor(wave),
+    baseline_Gender = collapse_levels(baseline_Gender, c("2", "4")),
+    baseline_Race   = collapse_levels(baseline_Race,   c("3", "4", "5", "6", "7")),
+    Relationship = factor(
+      case_when(
+        baseline_Relationship == 0                ~ "Single",
+        baseline_Relationship %in% c(1, 2, 3)     ~ "In Relationship",
+        baseline_Relationship %in% c(4, 5, 6, 7)  ~ "Other",
+        TRUE                                      ~ NA_character_
+      ),
+      levels = c("Single", "In Relationship", "Other")
+    )
+  )
+```
+
+```{r}
+baseline_stats <- list()
+df_z <- df
+df_z$log_approvals <- log1p(df$Total.approvals)
+df_z$baseline_Usage <- df_z$Usage
+dvs <- c("loneliness", "esi", "wb", "BPNSFS_Autonomy", "BPNSFS_Competence", "BPNSFS_Relatedness", "problematic_use", "intensity", "Usage")
+z_vars <- setdiff(dvs, c("date_since_start", "is_weekend"))
+
+for (v in z_vars) {
+  bcol <- paste0("baseline_", v)
+  pcol <- paste0("post_", v)
+  if (!all(c(bcol, pcol) %in% names(df)) ||
+      !is.numeric(df[[bcol]]) || !is.numeric(df[[pcol]])) next
+  mu   <- mean(df[[bcol]], na.rm = TRUE)
+  sdev <- sd(df[[bcol]],   na.rm = TRUE)
+  if (is.na(sdev) || sdev == 0) next        # no usable baseline -> leave raw
+  df_z[[bcol]] <- (df[[bcol]] - mu) / sdev
+  df_z[[pcol]] <- (df[[pcol]] - mu) / sdev
+  baseline_stats[[v]] <- c(mean = mu, sd = sdev, n = sum(!is.na(df[[bcol]])))
+}
+
+# reference table: what "1 SD" means for each outcome
+baseline_sd_table <- data.frame(
+  outcome       = names(baseline_stats),
+  baseline_mean = vapply(baseline_stats, `[[`, numeric(1), "mean"),
+  baseline_sd   = vapply(baseline_stats, `[[`, numeric(1), "sd"),
+  n_baseline    = vapply(baseline_stats, `[[`, numeric(1), "n"),
+  row.names     = NULL
+)
+
+```
+
+
+```{r}
+person_covs <- c("wave", "baseline_Age", "baseline_Gender", "baseline_Race",
+                 "baseline_EdLevel", "baseline_Income", "Relationship",
+                 "Tenure", "Usage", "Social", "Productivity")
+
+controls        <- paste(c(person_covs), collapse = " + ")
+
+fit_primary <- function(dv, data = df_z) {
+  lm(reformulate(c("baseline_treatment", paste0("baseline_", dv), controls), response =paste0("post_", dv)),
+       data = data)
+}
+
+fit_usage <- function(dv, data = df_z) {
+  lm(reformulate(c("baseline_treatment + Usage", controls), response =paste0("post_", dv)),
+       data = data)
+}
+```
+
+# Self-Report Data
+## Primary Outcomes
+
+### Emotional State
+```{r}
+summary(fit_primary("esi"))
+```
+
+### Well-Being
+```{r}
+summary(fit_primary("wb"))
+summary(fit_primary("BPNSFS_Autonomy"))
+summary(fit_primary("BPNSFS_Competence"))
+summary(fit_primary("BPNSFS_Relatedness"))
+```
+
+### Loneliness
+```{r}
+summary(fit_primary("loneliness"))
+```
+## BH Adjustments
+```{r}
+dvs <- c("esi", "wb", "BPNSFS_Autonomy",
+         "BPNSFS_Competence", "BPNSFS_Relatedness", "loneliness")
+
+results <- lapply(dvs, function(dv) {
+  model <- fit_primary(dv)
+  co <- summary(model)$coefficients["baseline_treatment", ]
+
+  data.frame(
+    outcome = dv,
+    estimate = co["Estimate"],
+    p = co["Pr(>|t|)"]
+  )
+}) %>%
+  bind_rows() %>%
+  mutate(
+    p_BH = p.adjust(p, method = "BH")
+  )
+
+results
+```
+
+## Usage Outcomes
+### Intensity
+```{r}
+summary(fit_primary("intensity"))
+```
+### Usage
+```{r}
+summary(fit_usage("Usage"))
+```
+### Problematic Use
+```{r}
+summary(fit_primary("problematic_use"))
+```
+## IPW Results
+```{r}
+# Stage 2: Completed post-study follow-up (endline completers)
+m1 <- glm(
+  completed_post ~ baseline_treatment + wave 
+    + baseline_Age + baseline_Gender 
+    + baseline_Race + baseline_EdLevel 
+    + baseline_Income + Relationship + baseline_loneliness + baseline_esi + baseline_wb
+    + baseline_lubben + baseline_social_satisfaction + baseline_ppl_met_inperson
+    + Tenure + Usage + Social + Productivity + baseline_intensity 
+    + baseline_problematic_use + log_approvals,
+  data = subset(df_z, completed_endline == 1),
+  family = binomial()
+)
+
+
+df_z$p1 <- predict(m1, newdata = df_z, type = "response")
+```
+
+```{r}
+post_df_z <- subset(
+  df_z,
+  completed_post == 1
+)
+
+post_df_z$ipw_post <- 1 / (
+  post_df_z$p1
+)
+
+summary(post_df_z$ipw_post)
+
+fit_primary_ipw <- function(dv, data = post_df_z) {
+  model <- lm(
+    reformulate(
+      c("baseline_treatment", paste0("baseline_", dv), controls),
+      response = paste0("post_", dv)
+    ),
+    data = data,
+    weights = ipw_post
+  )
+
+  print(summary(model))
+
+  # HC3 robust standard errors
+  print(lmtest::coeftest(
+    model,
+    vcov. = sandwich::vcovHC(model, type = "HC3")
+  ))
+
+  invisible(model)
+}
+```
+
+## BH Adjustments
+```{r}
+dvs <- c("Usage", "intensity", "problematic_use")
+
+results <- lapply(dvs, function(dv) {
+  model <- fit_primary(dv)
+  co <- summary(model)$coefficients["baseline_treatment", ]
+
+  data.frame(
+    outcome = dv,
+    estimate = co["Estimate"],
+    p = co["Pr(>|t|)"]
+  )
+}) %>%
+  bind_rows() %>%
+  mutate(
+    p_BH = p.adjust(p, method = "BH")
+  )
+
+results
+```
+
+### Primary Outcomes
+```{r}
+fit_primary_ipw("esi")
+```
+```{r}
+fit_primary_ipw("wb")
+```
+```{r}
+fit_primary_ipw("BPNSFS_Autonomy")
+```
+```{r}
+fit_primary_ipw("BPNSFS_Competence")
+```
+```{r}
+fit_primary_ipw("BPNSFS_Relatedness")
+```
+
+### Loneliness
+```{r}
+fit_primary_ipw("loneliness")
+```
+
+```{r}
+
+make_ipw_table <- function(
+  dvs = c("esi", "wb", "BPNSFS_Autonomy", "BPNSFS_Competence", "loneliness"),
+  data = post_df_z,
+  file = "ipw_primary.tex"
+) {
+  models <- lapply(dvs, function(dv) {
+    lm(
+      reformulate(
+        c("baseline_treatment", paste0("baseline_", dv), controls),
+        response = paste0("post_", dv)
+      ),
+      data = data,
+      weights = ipw_post
+    )
+  })
+
+  # HC3 robust SEs and p-values
+  robust <- lapply(models, function(m) {
+    lmtest::coeftest(
+      m,
+      vcov. = sandwich::vcovHC(m, type = "HC3")
+    )
+  })
+
+  ses <- lapply(robust, function(x) x[, "Std. Error"])
+  ps  <- lapply(robust, function(x) x[, "Pr(>|t|)"])
+
+stargazer(
+  models,
+  type = "latex",
+  out = file,
+  title = "IPW-Adjusted ANCOVA of Primary Outcomes",
+  dep.var.labels = c(
+    "ESI", "Well-being", "Autonomy", "Competence"
+  ),
+  se = ses,
+  p = ps,
+  star.cutoffs = c(0.05, 0.01, 0.001),
+  omit.stat = c("f", "ser"),
+  notes.append = FALSE,
+  digits = 3
+)
+
+  invisible(models)
+}
+
+make_ipw_table()
+```
+## Secondary Outcomes
+```{r}
+make_ipw_table <- function(
+  dvs = c("Usage", "intensity", "problematic_use"),
+  data = post_df_z
+) {
+  models <- lapply(dvs, function(dv) {
+    lm(
+      reformulate(
+        c("baseline_treatment", paste0("baseline_", dv), controls),
+        response = paste0("post_", dv)
+      ),
+      data = data,
+      weights = ipw_post
+    )
+  })
+
+  # HC3 robust SEs and p-values
+  robust <- lapply(models, function(m) {
+    lmtest::coeftest(
+      m,
+      vcov. = sandwich::vcovHC(m, type = "HC3")
+    )
+  })
+
+  ses <- lapply(robust, function(x) x[, "Std. Error"])
+  ps  <- lapply(robust, function(x) x[, "Pr(>|t|)"])
+
+stargazer(
+  models,
+  type = "latex",
+  star.cutoffs = c(0.05, 0.01, 0.001),
+  title = "IPW-Adjusted ANCOVA of Primary Outcomes",
+  dep.var.labels = c(
+    "Usage", "Intensity", "Problematic Use"
+  ),
+  se = ses,
+  p = ps,
+  omit.stat = c("f", "ser"),
+  notes.append = FALSE,
+  digits = 3
+)
+
+  invisible(models)
+}
+
+make_ipw_table()
+```
+# Behavioral Data
+
+```{r}
+post_df_z <- post_df_z %>%
+  filter(!is.na(post_before_timeSpentSeconds))
+post_df_z$post_before_log_timeSpentSeconds <- log1p(post_df_z$post_before_timeSpentSeconds)
+post_df_z$post_after_log_timeSpentSeconds <- log1p(post_df_z$post_after_timeSpentSeconds)
+post_df_z$post_before_log_totalMessages <- log1p(post_df_z$post_before_totalMessages)
+post_df_z$post_after_log_totalMessages <- log1p(post_df_z$post_after_totalMessages)
+post_df_z$post_before_log_sessions <- log1p(post_df_z$post_before_sessions)
+post_df_z$post_after_log_sessions <- log1p(post_df_z$post_after_sessions)
+```
+
+```{r}
+fit_primary_behavior <- function(dv, data = post_df_z) {
+  lm(reformulate(c("baseline_treatment", paste0("post_before_", dv), controls), response =paste0("post_after_", dv)),
+       data = data)
+}
+```
+
+
+```{r}
+summary(fit_primary_behavior("log_timeSpentSeconds"))
+```
+```{r}
+summary(fit_primary_behavior("log_totalMessages"))
+```
+
+```{r}
+summary(fit_primary_behavior("log_sessions"))
+```

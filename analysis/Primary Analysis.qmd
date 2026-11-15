@@ -101,6 +101,10 @@ rescale_to_baseline <- function(data, vars, stats) {
 
 z_vars <- setdiff(dvs, c("date_since_start", "is_weekend"))
 
+baseline_moments <- function(x) {
+  c(mean = mean(x, na.rm = TRUE), sd = sd(x, na.rm = TRUE), n = sum(!is.na(x)))
+}
+
 long_stats <- lapply(z_vars, function(v) baseline_moments(long[[v]][long$time == "baseline"]))
 names(long_stats) <- z_vars
 
@@ -141,6 +145,11 @@ fit_primary <- function(dv, data = long_z) {
        data = data, control = lmer_ctrl)
 }
 
+fit_primary_nob <- function(dv, data = long_z) {
+  lmer(reformulate(c("treatment * isDeactivation", "wave", re_pid), response = dv),
+       data = data, control = lmer_ctrl)
+}
+
 fit_eod_primary <- function(dv, data = eod_z) {
   lmer(reformulate(c("treatment * isDeactivation", controls, re_pid), response = dv),
        data = data, control = lmer_ctrl)
@@ -175,6 +184,22 @@ summary(fit_primary("BPNSFS_Relatedness"))
 summary(fit_primary("loneliness"))
 ```
 
+#### Robustness Analyses
+As a robustness analysis, we fit the results on our primary outcomes without any controls save for the wave of data collection. 
+```{r}
+summary(fit_primary_nob("esi"))
+```
+
+```{r}
+summary(fit_primary_nob("wb"))
+summary(fit_primary_nob("BPNSFS_Autonomy"))
+summary(fit_primary_nob("BPNSFS_Competence"))
+summary(fit_primary_nob("BPNSFS_Relatedness"))
+```
+```{r}
+summary(fit_primary_nob("loneliness"))
+```
+
 ### Secondary Outcomes
 These models correspond to outcomes reported in Sec. 2.1 in the main body of the paper.
 #### Social Behaviors
@@ -186,6 +211,19 @@ summary(fit_primary("social_satisfaction"))
 ```
 ```{r}
 summary(fit_primary("ppl_met_inperson"))
+```
+
+#### Robustness Analyses
+As a robustness analysis, we fit a model without the baseline demographic controls --- including only a control for the wave of data collection. 
+```{r}
+summary(fit_primary_nob("lubben"))
+```
+```{r}
+summary(fit_primary_nob("social_satisfaction"))
+```
+
+```{r}
+summary(fit_primary_nob("ppl_met_inperson"))
 ```
 
 ### Daily Outcomes

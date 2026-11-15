@@ -1,0 +1,97 @@
+---
+title: "Mediation Analysis"
+format: html
+editor: visual
+---
+
+# Mediation Analyses for "AI Deactivation Reduces Loneliness and Increases Social Interaction"
+
+```{r}
+library(dplyr)
+library(lavaan)
+```
+
+```{r}
+DATA_DIR <- "../data"
+
+N_BOOT    <- 5000
+set.seed(20261012)
+mediators <- c(social_satisfaction = "Social satisfaction",
+               time_spend_social   = "Time spent socializing")
+```
+
+## Load Data
+```{r}
+df <- read.csv(file.path(DATA_DIR, "participant_data.csv"), check.names = TRUE) %>%
+  mutate(
+    treat           = as.integer(as.logical(baseline_treatment)),
+    wave            = factor(wave),
+    baseline_Gender = factor(ifelse(baseline_Gender %in% c(2, 4), "Other", baseline_Gender)),
+    baseline_Race   = factor(ifelse(baseline_Race %in% c(3, 4, 6, 7), "Other", baseline_Race)),
+    Relationship    = factor(case_when(
+      baseline_Relationship == 0         ~ "Single",
+      baseline_Relationship %in% 1:3     ~ "In Relationship",
+      baseline_Relationship %in% 4:7     ~ "Other"
+    ), levels = c("Single", "In Relationship", "Other"))
+  )
+
+# Scale every wave of each variable by its baseline mean and SD.
+for (v in c("loneliness", names(mediators))) {
+  mu <- mean(df[[paste0("baseline_", v)]], na.rm = TRUE)
+  s  <- sd(df[[paste0("baseline_", v)]],   na.rm = TRUE)
+  for (tp in c("baseline", "midline", "endline")) {
+    col <- paste0(tp, "_", v)
+    df[[col]] <- (df[[col]] - mu) / s
+  }
+}
+```
+
+```{r}
+person_covs <- c("wave", "baseline_Age", "baseline_Gender", "baseline_Race",
+                 "baseline_EdLevel", "baseline_Income", "Relationship",
+                 "Tenure", "Usage", "Social", "Productivity")
+cov_mm <- model.matrix(reformulate(person_covs),
+                       model.frame(reformulate(person_covs), df, na.action = na.pass))[, -1]
+colnames(cov_mm) <- paste0("cv_", make.names(colnames(cov_mm)))
+cov_mm <- cov_mm[, apply(cov_mm, 2, var, na.rm = TRUE) > 0.01]  # drop near-empty dummies
+df     <- bind_cols(df, as.data.frame(cov_mm))
+covs   <- paste(colnames(cov_mm), collapse = " + ")
+```
+
+```{r}
+fit_mediator <- function(m) {
+  model <- sprintf("
+    midline_%1$s       ~ a*treat + baseline_%1$s + baseline_loneliness + %2$s
+    endline_loneliness ~ b*midline_%1$s + cp*treat + baseline_%1$s + baseline_loneliness + %2$s
+    indirect := a*b
+    direct   := cp
+    total    := cp + a*b
+  ", m, covs)
+  fit <- sem(model, data = df, missing = "fiml", se = "bootstrap", bootstrap = N_BOOT)
+
+  # Bootstrap draws for each path. p-values come from the same draws as the
+  # percentile CIs (two-sided: twice the share of draws on the far side of 0),
+  # so p < .05 exactly when the 95% CI excludes 0.
+  boot  <- lavInspect(fit, "coef.boot")
+  draws <- list(a        = boot[, "a"],
+                b        = boot[, "b"],
+                indirect = boot[, "a"] * boot[, "b"],
+                direct   = boot[, "cp"],
+                total    = boot[, "cp"] + boot[, "a"] * boot[, "b"])
+  boot_p <- sapply(draws, function(x) 2 * min(mean(x >= 0), mean(x <= 0)))
+
+  parameterEstimates(fit, boot.ci.type = "perc") %>%
+    filter(label %in% names(draws)) %>%
+    distinct(label, .keep_all = TRUE) %>%
+    transmute(mediator = mediators[[m]], path = label,
+              estimate = est, ci_lower = ci.lower, ci_upper = ci.upper,
+              p = boot_p[label], n = lavInspect(fit, "nobs"))
+}
+
+results <- bind_rows(lapply(names(mediators), fit_mediator)) %>%
+  mutate(across(c(estimate, ci_lower, ci_upper, p), ~ round(.x, 3)))
+```
+
+
+
+
