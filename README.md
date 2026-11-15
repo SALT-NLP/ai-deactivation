@@ -4,7 +4,7 @@ This repository contains the de-identified data and analysis code for "AI Deacti
 
 ## Repository Structure
 ```
-├── data/                     # De-identified study data
+├── data/                     # Study data
 ├── analysis/                 # Analysis notebooks (R / Quarto and Python / Jupyter)
 ├── supplementary.pdf         # Supplementary information
 ├── pyproject.toml, uv.lock   # Python environment
