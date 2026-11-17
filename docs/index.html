@@ -32,6 +32,7 @@ a{color:var(--treat)}
 .wrap.wide{max-width:1280px}
 .prose{max-width:40rem}
 .prose p{margin:0 0 1.1em}
+h1{font-size:clamp(2.8rem,6.8vw,5.4rem); line-height:1.02; font-weight:500; letter-spacing:-0.02em}
 h1,h2,h3{font-family:var(--display); font-weight:500; letter-spacing:-0.01em; margin:0}
 h2{font-size:clamp(1.9rem,4vw,2.7rem); line-height:1.12; font-weight:500; max-width:22ch; margin-bottom:.6em}
 h3{font-size:1.3rem; font-weight:600; margin-bottom:.4em}
@@ -58,8 +59,10 @@ section{padding:4.5rem 0; border-top:1px solid var(--line)}
 .hero-grid{display:grid; grid-template-columns:1.15fr .85fr; gap:3rem; align-items:center}
 .hero h1{max-width:14ch; font-size:clamp(2.8rem,6.8vw,5.4rem); line-height:1.02; font-weight:500; letter-spacing:-0.02em}
 .dek{font-size:1.25rem; color:var(--muted); max-width:34rem; margin:1.5rem 0 0}
-.byline{font-family:var(--sans); font-size:.9rem; color:var(--muted); margin-top:1.6rem}
-.date{font-family:var(--sans); font-size:.9rem; color:var(--muted); margin-top:0.2rem}
+.byline{font-family:var(--sans); font-size:.9rem; color:var(--muted); margin:1.6rem 0 0}
+.byline sup,.affil sup{font-size:.72em; line-height:0}
+.affil{font-family:var(--sans); font-size:.7rem; color:var(--muted); margin:.15rem 0 0}
+.date{font-family:var(--sans); font-size:.9rem; color:var(--muted); margin-top:.9rem}
 .paper-link{margin:.85rem 0 0}
 
 .chat{background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:1.1rem; font-family:var(--sans); position:relative; min-height:260px; display:flex; flex-direction:column; justify-content:flex-end; overflow:hidden}
@@ -207,8 +210,14 @@ footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-widt
 <header class="hero">
   <div class="wrap">
     <h1>What happens when people stop using AI?</h1>
-    <p class="dek">We conducted an experiment with 625 everyday ChatGPT users to find out what happens when people stop using AI. When people stop using AI, they report feeling less lonely and engage in more social activities.</p>
-    <p class="byline">Dora Zhao, Grace Wang, Yutong Zhang, Lujain Ibrahim, Robert E. Kraut and Diyi Yang</p>
+    <p class="dek">We conducted an experiment with 625 everyday ChatGPT users to find out what happens when people stop using AI. What we found is that when people stop using AI, they report feeling less lonely and engage in more social activities.</p>
+    <p class="byline"><a href="https://dorazhao99.github.io/">Dora Zhao</a><sup>1</sup>,
+      <a href="https://gragragrace.com/">Grace Wang</a><sup>1</sup>,
+      <a href="https://yutongz7.github.io/">Yutong Zhang</a><sup>1</sup>,
+      <a href="https://lujainibrahim.com/">Lujain Ibrahim</a><sup>2</sup>,
+      <a href="https://kraut.hciresearch.info/">Robert E. Kraut</a><sup>3</sup>,
+      and <a href="https://cs.stanford.edu/~diyiy/">Diyi Yang</a><sup>1</sup></p>
+    <p class="affil"><sup>1</sup>Stanford University &nbsp; <sup>2</sup>University of Oxford &nbsp; <sup>3</sup>Carnegie Mellon University</p>
     <p class="date">November 18, 2026</p>
     <p class="paper-link"><a class="btn sm" style="display:inline-block; text-decoration:none" href="[PAPER_URL]">Read the Full Paper</a></p>
   </div>
@@ -247,12 +256,12 @@ footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-widt
       <div id="uses"></div>
       <div class="cap">Share of participants whose most frequent use was each purpose. People could tie, so the bars add up to more than 100%.</div>
     </div>
-
+<!-- 
     <details>
       <summary>Why did participants stop using chatbots for one day?</summary>
       <p>Like prior works that have run deactivation experiments for other technologies [<a target="_blank" rel="noopener noreferrer" href="https://www.pnas.org/doi/10.1073/pnas.2321584121">1</a>], participants in the control condition also took a break from using AI assistants for one day. This helped ensure that both groups had a similar experience of participating in the study, while reducing the likelihood that people would drop out. 
       </p>
-    </details>
+    </details> -->
     <details>
       <summary>What were the other critera for participants to be eligible for the study?</summary>
       <p>To be eligible for the study, participants had to be at least 18 years old, based in the U.S, and use ChatGPT as their primary AI assistant. They also had to self-report as using ChatGPT for at least 15 minutes a day, have an account on the platform for at least one month, be willing to accept a payment of $40/week to stop using AI, and use Chrome as their browser. </p>
