@@ -372,6 +372,11 @@ footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-widt
       <p>We asked whether changes in participants' social behaviors one week into the study predicted the decline inloneliness at the end of it. We looked at both the  <em>quantity</em> of social interaction (time spent socializing) and the <em>quality</em> of these social interaction (satisfaction with social interactions).
     </div>
 
+    <div class="prose">
+      Both quantity and quality of social interaction seemed to play a part. A week into the break, participants were spending more time socializing and felt somewhat more satisfied with their social interactions than those who had only stopped using AI for one day. Participants who saw these changes also tended to feel less lonely by the end of the two weeks.
+    </div>
+    <p></p>
+    <!-- Mediation figure: temporarily hidden
     <div class="figure">
       <div class="controls">
         <div class="seg" role="group" aria-label="Choose a pathway">
@@ -384,6 +389,7 @@ footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-widt
       <div class="cap">Numbers on arrows are standardized coefficients with 95% confidence intervals. This analysis was exploratory: it shows the pattern is consistent with this explanation, not that it proves it.</div>
     </div>
 
+    -->
     <div class="prose">
       <h3>Reflecting on changes in their social behavior</h3>
       <p>Participants in the two-week group reflected on how they thought their social life had changed during the study period. About 41.5% described their social interactions improving, 42.3% noticed little or no change, and 8.8% said things got worse or were mixed. Grouping the responses by topic, a few clusters stood out. Open one to read what people said.</p>
@@ -580,7 +586,7 @@ function fmt(v){ const s=Math.abs(v).toFixed(2); return (v<0?"−":v>0?"+":"")+s
 
 /* ---------- Uses ---------- */
 (function(){
-  const uses=[["Productivity",84.7],["Novelty",33.6],["Entertainment",21.0],["Social",18.2]];
+  const uses=[["Productivity",84.4],["Novelty",33.6],["Entertainment",21.0],["Social",18.2]];
   document.getElementById("uses").innerHTML = uses.map(([k,v])=>`<div class="ubar"><span>${k}</span><div class="track"><div class="fill" style="width:${v}%"></div></div><span class="v">${v.toFixed(1)}%</span></div>`).join("");
 })();
 
@@ -716,7 +722,7 @@ EffectStrip("eff1",[
   show("wellbeing");
 })();
 
-/* ---------- Mediation ---------- */
+/* ---------- Mediation (temporarily disabled; re-enable with the HTML block in #why) ----------
 
 (function(){
   const svg=document.getElementById("med"), note=document.getElementById("mednote");
@@ -778,6 +784,7 @@ EffectStrip("eff1",[
   mq.addEventListener("change",()=>draw(pathway));
   draw("qty");
 })();
+---------- end Mediation ---------- */
 
 /* ---------- Topic clusters ---------- */
 (function(){
