@@ -11,11 +11,12 @@
 <style>
 :root{
   --bg:#FFFFFF; --soft:#F3F4F6; --surface:#FFFFFF; --ink:#1a1a1a; --muted:#5C5F66; --line:#E2E4E8;
-  --treat:#2B5FB4; --treat-soft:#DCE6F6; --ctrl:#B07310; --ctrl-soft:#F4E6CC;
+  --treat:#326A83; --treat-soft:#DCE6F6; --ctrl:#C65D4B; --ctrl-soft:#F4E6CC;
   --human:#B23A5E; --human-soft:#F7E1E8;
   --display:"Newsreader", Georgia, "Times New Roman", serif;
   --sans:"Inter", "Helvetica Neue", Arial, sans-serif;
   --serif:"Inter", "Helvetica Neue", Arial, sans-serif;
+  --col:46rem;
   color-scheme: only light;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
@@ -23,22 +24,24 @@
 }
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px); -webkit-text-size-adjust:100%}
-body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--serif); font-size:1.05rem; line-height:1.65}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--serif); font-size:1.2rem; line-height:1.65}
 img,svg{max-width:100%}
 a{color:var(--treat)}
 :focus-visible{outline:3px solid var(--treat); outline-offset:3px; border-radius:4px}
 
 .wrap{max-width:1040px; margin:0 auto; padding:0 1.25rem}
 .wrap.wide{max-width:1280px}
-.prose{max-width:40rem}
+.prose{max-width:var(--col); margin-left:auto; margin-right:auto}
 .prose p{margin:0 0 1.1em}
-h1{font-size:clamp(2.8rem,6.8vw,5.4rem); line-height:1.02; font-weight:500; letter-spacing:-0.02em}
+h1{font-size:clamp(2.4rem,5.0vw,3.8rem); line-height:1.02; font-weight:500; letter-spacing:-0.02em}
 h1,h2,h3{font-family:var(--display); font-weight:500; letter-spacing:-0.01em; margin:0}
-h2{font-size:clamp(1.9rem,4vw,2.7rem); line-height:1.12; font-weight:500; max-width:22ch; margin-bottom:.6em}
+h2{font-size:clamp(2rem,4vw,2.9rem); line-height:1.12; font-weight:500; max-width:26ch; margin-bottom:.6em}
 h3{font-size:1.3rem; font-weight:600; margin-bottom:.4em}
 section{padding:4.5rem 0; border-top:1px solid var(--line)}
 .small{font-family:var(--sans); font-size:.88rem; line-height:1.5; color:var(--muted)}
-.figure{margin:2.2rem 0 1rem; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:1.4rem}
+.figure{max-width:58rem; margin:2.2rem auto 1rem; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:1.4rem}
+.figure.wide{max-width:66rem}
+#topics{max-width:var(--col); margin-left:auto; margin-right:auto}
 .figure .cap{font-family:var(--sans); font-size:.85rem; color:var(--muted); margin-top:.9rem; max-width:44rem}
 .scroll-x{overflow-x:auto}
 .t{color:var(--treat); font-weight:600}
@@ -57,8 +60,8 @@ section{padding:4.5rem 0; border-top:1px solid var(--line)}
 /* Hero */
 .hero{padding:4.5rem 0 4rem}
 .hero-grid{display:grid; grid-template-columns:1.15fr .85fr; gap:3rem; align-items:center}
-.hero h1{max-width:14ch; font-size:clamp(2.8rem,6.8vw,5.4rem); line-height:1.02; font-weight:500; letter-spacing:-0.02em}
-.dek{font-size:1.25rem; color:var(--muted); max-width:34rem; margin:1.5rem 0 0}
+.hero h1{max-width:18ch; font-size:clamp(2.4rem,5.5vw,4.2rem); line-height:1.02; font-weight:500; letter-spacing:-0.02em}
+.dek{font-size:1.4rem; color:var(--muted); max-width:none; margin:1.5rem 0 0}
 .byline{font-family:var(--sans); font-size:.9rem; color:var(--muted); margin:1.6rem 0 0}
 .byline sup,.affil sup{font-size:.72em; line-height:0}
 .affil{font-family:var(--sans); font-size:.7rem; color:var(--muted); margin:.15rem 0 0}
@@ -97,7 +100,7 @@ input[type=range]{width:100%; accent-color:var(--treat)}
 .predict{display:flex; flex-wrap:wrap; gap:.6rem; margin:1rem 0}
 .predict button{font-family:var(--sans); font-size:.95rem; border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:999px; padding:.55rem 1.1rem; cursor:pointer}
 .predict button.picked{border-color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink)}
-.reveal{font-family:var(--sans); background:var(--treat-soft); border-radius:12px; padding:1rem 1.2rem; display:none; max-width:40rem}
+.reveal{font-family:var(--sans); background:var(--treat-soft); border-radius:12px; padding:1rem 1.2rem; display:none; max-width:40rem; margin-left:auto; margin-right:auto}
 .reveal.on{display:block}
 
 /* Line chart tooltip */
@@ -134,12 +137,12 @@ input[type=range]{width:100%; accent-color:var(--treat)}
 .eff-key .k2::before{border:2px solid var(--muted)}
 .eff-key .k0::before{display:none}
 
-details{font-family:var(--sans); font-size:.95rem; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:.8rem 1.1rem; margin:1.2rem 0; max-width:40rem}
+details{font-family:var(--sans); font-size:.95rem; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:.8rem 1.1rem; margin:1.2rem auto; max-width:var(--col)}
 details summary{cursor:pointer; font-weight:500}
 details p{margin:.7rem 0 0; color:var(--muted); line-height:1.55}
 
 /* Mediation */
-.med-note{font-family:var(--sans); font-size:.95rem; max-width:40rem; margin-top:.8rem; min-height:3em}
+.med-note{font-family:var(--sans); font-size:1rem; max-width:var(--col); margin:.8rem auto 0; min-height:3em}
 
 /* Quotes */
 .react{display:flex; height:18px; border-radius:9px; overflow:hidden; margin:.6rem 0 .5rem}
@@ -203,12 +206,25 @@ footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-widt
 @media (prefers-reduced-motion: reduce){
   *{transition:none !important; animation:none !important}
 }
+
+/* Loneliness dot plot (own colors, distinct from treatment blue / control amber) */
+#lonelyfig{--ldp-less:#67917B; --ldp-same:var(--muted); --ldp-more:#E5B653}
+.ldp-readouts{display:flex; flex-wrap:wrap; gap:.4rem 1.8rem; font-family:var(--sans); font-size:.95rem; margin:.4rem 0 .8rem}
+.ldp-readouts div{display:flex; align-items:baseline; gap:.45rem}
+.ldp-readouts b{font-size:1.9rem; font-weight:600; letter-spacing:-0.02em; line-height:1.1; font-variant-numeric:tabular-nums}
+.ldp-readouts .less{color:var(--ldp-less)} .ldp-readouts .same{color:var(--ldp-same)} .ldp-readouts .more{color:var(--ldp-more)}
+.ldp-scroll{overflow-x:auto}
+.ldp-scroll svg{min-width:520px; width:100%; height:auto; display:block}
+.ldp-ticks{display:grid; grid-template-columns:1fr 1fr 1fr; font-family:var(--sans); font-size:.88rem; color:var(--muted); margin-top:.2rem}
+.ldp-ticks span:nth-child(2){text-align:center}
+.ldp-ticks span:nth-child(3){text-align:right}
 </style>
 </head>
 <body>
 
 <header class="hero">
   <div class="wrap">
+  <div class="prose">
     <h1>What happens when people stop using AI?</h1>
     <p class="dek">We conducted an experiment with 625 everyday ChatGPT users to find out what happens when people stop using AI. What we found is that when people stop using AI, they report feeling less lonely and engage in more social activities.</p>
     <p class="byline"><a href="https://dorazhao99.github.io/">Dora Zhao</a><sup>1</sup>,
@@ -218,8 +234,9 @@ footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-widt
       <a href="https://kraut.hciresearch.info/">Robert E. Kraut</a><sup>3</sup>,
       and <a href="https://cs.stanford.edu/~diyiy/">Diyi Yang</a><sup>1</sup></p>
     <p class="affil"><sup>1</sup>Stanford University &nbsp; <sup>2</sup>University of Oxford &nbsp; <sup>3</sup>Carnegie Mellon University</p>
-    <p class="date">November 18, 2026</p>
-    <p class="paper-link"><a class="btn sm" style="display:inline-block; text-decoration:none" href="[PAPER_URL]">Read the Full Paper</a></p>
+    <p class="date">November 20, 2026</p>
+    <p class="paper-link"><a class="btn sm" style="display:inline-block; text-decoration:none" href="paper.pdf">Read the Full Paper</a></p>
+  </div>
   </div>
 </header>
 
@@ -251,7 +268,7 @@ footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-widt
       <h3>Who were these participants?</h3>
       <p>Participants were recruited using Prolific, an online platform for recruiting research participants. Most participants used AI assistants for seeking out information or for getting how-to advice. Conversations about relationships or personal reflection made up just 3.2% of their conversations with ChatGPT.</p>
     </div>
-    <div class="figure" style="max-width:40rem">
+    <div class="figure" style="max-width:var(--col)">
       <h3>What participants used ChatGPT for most frequently</h3>
       <div id="uses"></div>
       <div class="cap">Share of participants whose most frequent use was each purpose. People could tie, so the bars add up to more than 100%.</div>
@@ -278,15 +295,33 @@ footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-widt
 
     <div class="prose">
       <p>
-        Compared with participants who took a one-day break, those who stopped using AI for two weeks experienced a <strong>greater reduction in loneliness</strong>. Participants in the two-week group reported <strong>meeting more people in person</strong> and feeling a <strong>stronger sense of social support</strong>. On average, participants who stopped using AI for two weeks interacted with roughly one additional person every two days, compared with those who stopped for one day.</p>
+        Compared with participants who took a one-day break, those who stopped using AI for two weeks experienced a <strong>greater reduction in loneliness</strong>. By the end of the break, 58.2% of the two-week group felt less lonely than when they started, 22.1% felt no change, and 19.8% felt more lonely.
+      </p>
+    </div>
+
+    <div class="figure" id="lonelyfig">
+      <h3>How loneliness changed for each person who took the two-week break</h3>
+      <div class="ldp-readouts" aria-hidden="true">
+        <div><b class="less" id="ldp-less">0.0%</b><span>less lonely</span></div>
+        <div><b class="same" id="ldp-same">100.0%</b><span>no change</span></div>
+        <div><b class="more" id="ldp-more">0.0%</b><span>more lonely</span></div>
+      </div>
+      <div class="ldp-scroll"><svg id="ldp" viewBox="0 0 720 330" role="img" aria-label="Dot plot of loneliness scores for each participant in the two-week group, from the start of the study to week 2"></svg></div>
+      <input type="range" id="ldp-t" min="0" max="2" step="1" value="0" aria-label="Survey point, from Start to Week 2">
+      <div class="ldp-ticks" aria-hidden="true"><span>Start</span><span>Week 1</span><span>Week 2</span></div>
+    </div>
+
+    <div class="prose">
+      <p>
+        Participants in the two-week group reported <strong>meeting more people in person</strong> and feeling a <strong>stronger sense of social support</strong>. On average, participants who stopped using AI for two weeks interacted with roughly one additional person every two days, compared with those who stopped for one day.
+      </p>
     </div>
 
     <div class="prose">
       <p>Each dot shows how much more the two-week group changed than the one-day group.</p>
     </div>
-    </div>
-    <div class="wrap wide">
-    <div class="figure">
+
+    <div class="figure wide">
       <div class="controls">
         <button type="button" class="btn ghost" data-stats="eff1" aria-pressed="false">Show stats</button>
       </div>
@@ -294,8 +329,6 @@ footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-widt
       <div class="eff-key"><span class="k1">p &lt; .05</span><span class="k2">p ≥ .05</span><span class="k0">* p &lt; .05, ** p &lt; .01, *** p &lt; .001</span></div>
       <div class="cap">Coefficients (β) from linear mixed-effects models, in baseline standard-deviation units, with 95% confidence intervals.</div>
     </div>
-    </div>
-    <div class="wrap">
 
     <div class="prose">
       <p>We also checked in with participants throughout the experiment about their daily social interactions. Over the two weeks, the gap between the groups grew. Those who stopped using AI for two weeks <strong>increasingly reported interacting with more people and spending more time socializing</strong> than those in the one-day group.</p>
@@ -313,7 +346,7 @@ footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-widt
         <svg id="daily" viewBox="0 0 720 330" style="min-width:520px" role="img" aria-label="Daily averages by group"></svg>
         <div class="tip" id="tip"></div>
       </div>
-      <div class="cap" id="dailycap">Average daily answers to "How many social interactions have you participated in during the past day?” The number is reported on a log scale. Hover or tap a day to compare groups. The shaded area marks days the two-week group was ahead.</div>
+      <div class="cap" id="dailycap">Average daily answers to "How many social interactions have you participated in during the past day?” Hover or tap a day to compare groups. The shaded area marks days the two-week group was ahead.</div>
     </div>
 
     <details>
@@ -393,9 +426,8 @@ footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-widt
       <p>Two weeks after the experiment ended, participants who took the two-week break still reported feeling less lonely compared to those in the one-day group, scoring about 0.75 points lower on our 3–21-point loneliness scale.</p>
       <p>They also reported feeling more <em>competent</em> (capable of handling things) and more <em>autonomous</em> (in charge of their own choices). Participants in the two-week group also reported that they were using AI less frequently and less intensively compared to those in the one-day group.</p>
     </div>
-    </div>
-    <div class="wrap wide">
-    <div class="figure">
+
+    <div class="figure wide">
       <div class="controls">
         <div class="seg" role="group" aria-label="Choose a set of outcomes">
           <button aria-pressed="true" data-w="wellbeing">Psychological and Social Well-Being</button>
@@ -416,7 +448,7 @@ footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-widt
     <div class="prose">
       <h2>Want the full story?</h2>
       <p>This page covers the highlights. Check out the full paper for additional details and results.</p>
-      <p><a class="btn" style="display:inline-block; text-decoration:none" href="[PAPER_URL]">Read the paper</a></p>
+      <p><a class="btn" style="display:inline-block; text-decoration:none" href="paper.pdf">Read the paper</a></p>
       <p class="small">Zhao, D., Wang, G., Zhang, Y., Ibrahim, L., Kraut, R. E., and Yang, D. “AI Deactivation Reduces Loneliness and Increases Social Interaction.”</p>
     </div>
   </div>
@@ -424,6 +456,7 @@ footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-widt
 
 </main>
 
+<script src="loneliness-data.js"></script>
 <script>
 /* ===================================================================
    QUOTE BANK: replace or extend with your full bank.
@@ -556,10 +589,12 @@ function fmt(v){ const s=Math.abs(v).toFixed(2); return (v<0?"−":v>0?"+":"")+s
   // Approximate values read from Figure 2c. Replace with exact daily means.
   const days=[0,1,2,4,5,6,8,9,11,12,13];
   const data={
-    people:{ label:"People interacted with in person", domain:[1.6,2.0], ticks:[1.6,1.7,1.8,1.9,2.0],
-      t:[1.87368939, 1.7513112, 1.74085679, 1.86821021, 1.83399185, 1.84923284, 1.82951834, 1.82168994, 1.8827373, 1.89530392, 1.79877325],
-      c:[1.91932814, 1.81698094, 1.78310979, 1.78747384, 1.69474041, 1.76482907, 1.7658463, 1.81974502, 1.74673757, 1.81215563, 1.69714985],
-      cap:"Average daily answers to 'How many social interactions have you participated in during the past day?' The number is reported on a log scale. Hover or tap a day to compare groups. The shaded area marks days the two-week group was ahead."},
+    people:{ label:"People interacted with in person", domain:[5, 9], ticks:[5, 6, 7, 8, 9],
+      c:[7.91752577, 7.44047619, 6.44621514, 6.71848739, 5.976,     7.19591837,
+      6.61603376, 7.5720524,  6.6682243,  7.19111111, 6.98214286],
+      t:[7.5125448,  6.7732342,  6.68939394, 7.51417004, 7.453125,   7.12830189,
+ 7.65116279, 7.62790698, 7.6,        7.81927711, 8.14785992],
+      cap:"Average daily answers to 'How many social interactions have you participated in during the past day?' Hover or tap a day to compare groups. The shaded area marks days the two-week group was ahead."},
     social:{ label:"Time spent socializing (survey scale)", domain:[2.8,3.9], ticks:[2.8,3.0,3.2,3.4,3.6,3.8],
       t:[3.44839858, 3.10408922, 3.22641509, 3.668, 3.60700389, 3.26865672, 3.1969112, 3.31782946, 3.77822581, 3.71146245, 3.41015625],
       c:[3.46757679, 3.26190476, 3.17786561, 3.57322176, 3.40079365, 3.1300813, 3.0460251, 3.10775862, 3.37383178, 3.55066079, 2.91555556],
@@ -647,24 +682,24 @@ document.querySelectorAll("[data-stats]").forEach(b=>b.addEventListener("click",
 }));
 
 EffectStrip("eff1",[
-  {label:"Loneliness", plain:"UCLA Loneliness Scale", say:"were less lonely", est:-0.10, lo:-0.19, hi:-0.01, stars:"*", p:"p = .028"},
-  {label:"People met in person", plain:"Number of in-person interactions", say:"had more in-person interactions", est:0.18, lo:0.03, hi:0.33, stars:"*", p:"p = .019"},
-  {label:"Social support", plain:"Lubben Social Network Scale", say:"felt more social support", est:0.10, lo:0.02, hi:0.19, stars:"*", p:"p = .015"},
-  {label:"Social satisfaction", plain:"Satisfaction with interactions", say:"were more satisfied with interactions but not significantly", est:0.14, lo:0.00, hi:0.28, stars:"", p:"p = .053"},
-  {label:"Psychological well-being", plain:"Comprehensive Inventory of Thriving", say:"had no significant change in psychological well-being", est:0.05, lo:-0.03, hi:0.13, stars:"", p:"p = 0.223"},
-  {label:"Emotional State", plain:"Day-to-day mood", say:"had no significant change in emotional state", est:0.01, lo:-0.07, hi:0.10, stars:"", p:"p = 0.755"},
+  {label:"Loneliness", plain:"", say:"were less lonely", est:-0.10, lo:-0.19, hi:-0.01, stars:"*", p:"p = .028"},
+  {label:"People met in person", plain:"", say:"had more in-person interactions", est:0.18, lo:0.03, hi:0.33, stars:"*", p:"p = .019"},
+  {label:"Social support", plain:"", say:"felt more social support", est:0.10, lo:0.02, hi:0.19, stars:"*", p:"p = .015"},
+  {label:"Social satisfaction", plain:"", say:"were more satisfied with interactions but not significantly", est:0.14, lo:0.00, hi:0.28, stars:"", p:"p = .053"},
+  {label:"Psychological well-being", plain:"", say:"had no significant change in psychological well-being", est:0.05, lo:-0.03, hi:0.13, stars:"", p:"p = 0.223"},
+  {label:"Emotional State", plain:"", say:"had no significant change in emotional state", est:0.01, lo:-0.07, hi:0.10, stars:"", p:"p = 0.755"},
 
 ],[-0.3,0.4]);
 
 (function(){
   const sets={
     wellbeing:[
-      {label:"Loneliness", plain:"UCLA Loneliness Scale", say:"felt less lonely", est:-0.16, lo:-0.29, hi:-0.04, stars:"*", p:"p = .016"},
-      {label:"Competence", plain:"Feeling capable of handling things", say:"felt more confident in their own abilities", est:0.18, lo:0.06, hi:0.31, stars:"**", p:"p = .004"},
-      {label:"Autonomy", plain:"Feeling in charge of one’s choices", say:"felt more personal contol over their own choices", est:0.18, lo:0.03, hi:0.34, stars:"*", p:"p = .025"},
-      {label:"Relatedness", plain:"Feeling close to others", say:"felt no significant change in their connectedness to others", est:0.05, lo:-0.08, hi:0.18, stars:"", p:"p = 0.442"},
-      {label:"Psychological well-being", plain:"Comprehensive Inventory of Thriving", say:"had no significant change in psychological well-being", est:0.07, lo:-0.06, hi:0.19, stars:"", p:"p = .320"},
-      {label:"Emotional State", plain:"Day-to-day mood", say:"had no significant change in emotional state", est:0.08, lo:-0.06, hi:0.22, stars:"", p:"p = .294"}
+      {label:"Loneliness", plain:"", say:"felt less lonely", est:-0.16, lo:-0.29, hi:-0.04, stars:"*", p:"p = .016"},
+      {label:"Competence", plain:"", say:"felt more confident in their own abilities", est:0.18, lo:0.06, hi:0.31, stars:"**", p:"p = .004"},
+      {label:"Autonomy", plain:"", say:"felt more personal contol over their own choices", est:0.18, lo:0.03, hi:0.34, stars:"*", p:"p = .025"},
+      {label:"Relatedness", plain:"", say:"felt no significant change in their connectedness to others", est:0.05, lo:-0.08, hi:0.18, stars:"", p:"p = 0.442"},
+      {label:"Psychological well-being", plain:"", say:"had no significant change in psychological well-being", est:0.07, lo:-0.06, hi:0.19, stars:"", p:"p = .320"},
+      {label:"Emotional State", plain:"", say:"had no significant change in emotional state", est:0.08, lo:-0.06, hi:0.22, stars:"", p:"p = .294"}
     ],
     usage:[
       {label:"Time using AI", plain:"Self-reported", say:"reported using AI for less time", est:-0.43, lo:-0.61, hi:-0.26, stars:"***", p:"p < .001"},
@@ -814,6 +849,156 @@ EffectStrip("eff1",[
   }));
   mq.addEventListener("change",draw);
   draw();
+})();
+
+/* ---------- Loneliness dot plot ---------- */
+(function(){
+  /* Data comes from loneliness-data.js (window.LONELINESS_PEOPLE): one
+     [baseline, week1, week2] array per participant. A null week1 means the dot
+     moves straight from baseline to week 2. If PEOPLE is null, the figure uses
+     seeded placeholder data and shows a "Placeholder data" label. */
+  let PEOPLE = window.LONELINESS_PEOPLE ?? null;
+  /* Scores within the same BIN-wide bucket stack together. Use 1 for whole-number
+     sum scores; use e.g. 0.5 or 0.25 for scales reported as averages. */
+  const BIN = 1;
+
+  const svg=document.getElementById("ldp"), slider=document.getElementById("ldp-t");
+  if(!svg||!slider) return;
+  const outLess=document.getElementById("ldp-less"), outSame=document.getElementById("ldp-same"), outMore=document.getElementById("ldp-more");
+  const F={"font-family":"var(--sans)"};
+
+  const placeholder = !Array.isArray(PEOPLE) || PEOPLE.length===0;
+  if(placeholder){
+    // Seeded so the placeholder looks the same on every load. Reproduces the
+    // reported endline split: 153 less lonely, 58 no change, 52 more lonely (n=263).
+    let seed=20261118;
+    const rnd=()=>{ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
+    const gauss=()=>Math.sqrt(-2*Math.log(1-rnd()))*Math.cos(2*Math.PI*rnd());
+    const clamp=v=>Math.max(3,Math.min(21,Math.round(v)));
+    const groups=[].concat(Array(153).fill(-1),Array(58).fill(0),Array(52).fill(1));
+    PEOPLE=groups.map(g=>{
+      let b=clamp(11+gauss()*4);
+      if(g<0&&b<5) b=5+Math.floor(rnd()*3);
+      if(g>0&&b>19) b=19-Math.floor(rnd()*3);
+      const d=1+Math.floor(rnd()*rnd()*6);
+      const w2= g<0 ? clamp(b-d) : g>0 ? clamp(b+d) : b;
+      const w1= rnd()<0.08 ? null : clamp(b+(w2-b)*rnd()+(rnd()-0.5)*2);
+      return [b,w1,w2];
+    });
+    for(let i=PEOPLE.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [PEOPLE[i],PEOPLE[j]]=[PEOPLE[j],PEOPLE[i]]; }
+  }
+  const n=PEOPLE.length;
+
+  // Geometry
+  const W=720, L=36, R=W-36, top=30, axisY=262;
+  const vals=PEOPLE.flat().filter(v=>v!=null);
+  let lo=Math.floor(Math.min(...vals)/5)*5, hi=Math.ceil(Math.max(...vals)/5)*5;
+  if(hi===lo) hi=lo+5;
+  const step=(hi-lo)<=30?5:10;
+  const X=v=>L+(v-lo)/(hi-lo)*(R-L);
+  const colW=BIN*(R-L)/(hi-lo);
+
+  const lerp=(a,b,f)=>a===b?a:a*(1-f)+b*f;
+  const sign=(v,b)=>v<b?0:v>b?2:1; // 0 less lonely, 1 no change, 2 more lonely
+
+  // Stacked layout at each survey: [{bin, k}] per person (null if missing)
+  const stacks=[0,1,2].map(s=>{
+    const cols=new Map();
+    PEOPLE.forEach((p,i)=>{
+      if(p[s]==null) return;
+      const bin=Math.round(p[s]/BIN)*BIN;
+      if(!cols.has(bin)) cols.set(bin,[]);
+      cols.get(bin).push(i);
+    });
+    const pos=new Array(n).fill(null);
+    let tallest=0;
+    cols.forEach((ids,bin)=>{
+      ids.sort((a,b)=>sign(PEOPLE[a][s],PEOPLE[a][0])-sign(PEOPLE[b][s],PEOPLE[b][0]) || a-b);
+      ids.forEach((id,k)=>{ pos[id]={bin,k,cnt:ids.length}; });
+      tallest=Math.max(tallest,ids.length);
+    });
+    return {pos,tallest};
+  });
+  // Dot spacing comes from the tallest stack across all surveys, so the scale
+  // stays fixed while sliding and no stack runs off the top of the chart.
+  // Each column may wrap into WIDE dots side by side (filled bottom-up, row by
+  // row); WIDE is chosen to give the largest dots that fit both the height and
+  // the column width.
+  const maxStack=Math.max(1,...stacks.map(s=>s.tallest));
+  const plotH=axisY-4-top;
+  let WIDE=1, dy=0;
+  for(let w=1; w<=6; w++){
+    const d=Math.min(plotH/Math.ceil(maxStack/w), colW*0.92/w, 16);
+    if(d>dy+0.01){ dy=d; WIDE=w; }
+  }
+  const r=dy*0.44;
+  const layout=stacks.map(s=>s.pos.map(q=>{
+    if(!q) return null;
+    const row=Math.floor(q.k/WIDE), col=q.k%WIDE;
+    const inRow=Math.min(WIDE, q.cnt-row*WIDE); // center a partly filled top row
+    return {x:X(q.bin)+(col-(inRow-1)/2)*dy, y:axisY-4-dy/2-row*dy};
+  }));
+
+  // Axis
+  el("line",{x1:L,x2:R,y1:axisY,y2:axisY,stroke:"var(--ink)","stroke-width":1.2},svg);
+  for(let v=lo; v<=hi; v+=step){
+    el("line",{x1:X(v),x2:X(v),y1:axisY,y2:axisY+5,stroke:"var(--ink)","stroke-width":1.2},svg);
+    txt("text",{...F,x:X(v),y:axisY+20,"text-anchor":"middle","font-size":12,fill:"var(--muted)"},String(v),svg);
+  }
+  txt("text",{...F,x:L,y:axisY+46,"text-anchor":"start","font-size":13,fill:"var(--muted)"},"Less lonely",svg);
+  txt("text",{...F,x:R,y:axisY+46,"text-anchor":"end","font-size":13,fill:"var(--muted)"},"More lonely",svg);
+  txt("text",{...F,x:(L+R)/2,y:axisY+46,"text-anchor":"middle","font-size":13,"font-weight":600,fill:"var(--ink)"},"Loneliness score",svg);
+  if(placeholder){
+    txt("text",{...F,x:R,y:16,"text-anchor":"end","font-size":12,"font-weight":600,fill:"var(--muted)"},"Placeholder data",svg);
+  }
+
+  const COLORS=["var(--ldp-less)","var(--ldp-same)","var(--ldp-more)"];
+  const dots=PEOPLE.map(()=>el("circle",{r:r.toFixed(2),stroke:"var(--surface)","stroke-width":(r*0.25).toFixed(2)},svg));
+  const pct=c=>(c/n*100).toFixed(1)+"%";
+  const NAMES=["Start","Week 1","Week 2"];
+
+  function render(t){
+    const seg=Math.min(Math.floor(t),1), f=t-seg;
+    const counts=[0,0,0];
+    PEOPLE.forEach((p,i)=>{
+      let a,b,va,vb,g;
+      if(p[1]==null){ a=layout[0][i]; b=layout[2][i]; va=p[0]; vb=p[2]; g=t/2; }
+      else { a=layout[seg][i]; b=layout[seg+1][i]; va=p[seg]; vb=p[seg+1]; g=f; }
+      const score=lerp(va,vb,g), c=sign(score,p[0]);
+      counts[c]++;
+      const d=dots[i];
+      d.setAttribute("cx",lerp(a.x,b.x,g).toFixed(2));
+      d.setAttribute("cy",lerp(a.y,b.y,g).toFixed(2));
+      d.setAttribute("fill",COLORS[c]);
+    });
+    outLess.textContent=pct(counts[0]); outSame.textContent=pct(counts[1]); outMore.textContent=pct(counts[2]);
+    return counts;
+  }
+
+  // The slider has three stops (Start, Week 1, Week 2). Dots animate between
+  // stops; with reduced motion they jump straight to the new layout.
+  let shown=+slider.value, anim=null;
+  function go(){
+    const target=+slider.value, from=shown, dur=reduceMotion?0:Math.min(900,450*Math.abs(target-from)+250);
+    if(anim){ cancelAnimationFrame(anim); anim=null; }
+    if(!dur){ shown=target; render(shown); return; }
+    const t0=performance.now();
+    const ease=u=>u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+    const frame=now=>{
+      const u=Math.min(1,(now-t0)/dur);
+      shown=u>=1?target:from+(target-from)*ease(u);
+      render(shown);
+      anim=u<1?requestAnimationFrame(frame):null;
+    };
+    anim=requestAnimationFrame(frame);
+  }
+  function label(){
+    const t=+slider.value, c=[0,0,0];
+    PEOPLE.forEach(p=>{ const v=p[1]==null&&t===1?(p[0]+p[2])/2:p[t]; c[sign(v,p[0])]++; });
+    slider.setAttribute("aria-valuetext",`${NAMES[t]}: ${pct(c[0])} less lonely, ${pct(c[1])} no change, ${pct(c[2])} more lonely`);
+  }
+  slider.addEventListener("input",()=>{ label(); go(); });
+  render(shown); label();
 })();
 
 </script>
