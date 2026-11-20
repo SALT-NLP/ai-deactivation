@@ -39,8 +39,8 @@ h2{font-size:clamp(2rem,4vw,2.9rem); line-height:1.12; font-weight:500; max-widt
 h3{font-size:1.3rem; font-weight:600; margin-bottom:.4em}
 section{padding:4.5rem 0; border-top:1px solid var(--line)}
 .small{font-family:var(--sans); font-size:.88rem; line-height:1.5; color:var(--muted)}
-.figure{max-width:58rem; margin:2.2rem auto 1rem; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:1.4rem}
-.figure.wide{max-width:66rem}
+.figure{max-width:var(--col); margin:2.2rem auto 1rem; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:1.4rem}
+.figure.wide{max-width:var(--col)}
 #topics{max-width:var(--col); margin-left:auto; margin-right:auto}
 .figure .cap{font-family:var(--sans); font-size:.85rem; color:var(--muted); margin-top:.9rem; max-width:44rem}
 .scroll-x{overflow-x:auto}
@@ -111,7 +111,7 @@ input[type=range]{width:100%; accent-color:var(--treat)}
 
 /* Effect strip */
 .eff{font-family:var(--sans)}
-.eff-row{display:grid; grid-template-columns:minmax(9rem,14rem) 1fr minmax(12rem,18rem); gap:1rem; align-items:center; padding:.65rem 0; border-bottom:1px solid var(--line)}
+.eff-row{display:grid; grid-template-columns:minmax(8rem,10rem) 1fr minmax(10rem,13rem); gap:1rem; align-items:center; padding:.65rem 0; border-bottom:1px solid var(--line)}
 .eff-row:last-of-type{border-bottom:0}
 .eff-label{font-size:.95rem; font-weight:500; line-height:1.3}
 .eff-label small{display:block; font-weight:400; color:var(--muted); font-size:.8rem}
@@ -126,10 +126,10 @@ input[type=range]{width:100%; accent-color:var(--treat)}
 .eff-val b{color:var(--ink); font-weight:600}
 .eff-val small{display:block; font-size:.78rem}
 .eff-say{font-size:.92rem; line-height:1.4; color:var(--ink)}
-.eff-head{display:grid; grid-template-columns:minmax(9rem,14rem) 1fr minmax(12rem,18rem); gap:1rem; align-items:end; padding:0 0 .4rem; font-size:.8rem; font-weight:500; line-height:1.35; color:var(--muted)}
+.eff-head{display:grid; grid-template-columns:minmax(8rem,10rem) 1fr minmax(10rem,13rem); gap:1rem; align-items:end; padding:0 0 .4rem; font-size:.8rem; font-weight:500; line-height:1.35; color:var(--muted)}
 .eff.stats .eff-head,.eff.stats .eff-say{display:none}
 .eff:not(.stats) .eff-val{display:none}
-.eff-axis{display:grid; grid-template-columns:minmax(9rem,14rem) 1fr minmax(12rem,18rem); gap:1rem; font-size:.8rem; color:var(--muted); margin-top:.4rem}
+.eff-axis{display:grid; grid-template-columns:minmax(8rem,10rem) 1fr minmax(10rem,13rem); gap:1rem; font-size:.8rem; color:var(--muted); margin-top:.4rem}
 .eff-axis div:nth-child(2){display:flex; justify-content:space-between}
 .eff-key{display:flex; gap:1.2rem; font-family:var(--sans); font-size:.82rem; color:var(--muted); margin-top:.9rem; flex-wrap:wrap}
 .eff-key span::before{content:""; display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:.4rem; vertical-align:-1px}
@@ -175,6 +175,11 @@ details p{margin:.7rem 0 0; color:var(--muted); line-height:1.55}
 .takeaway p{font-size:1.25rem; line-height:1.55; margin:0 0 .9em; max-width:38rem}
 .takeaway p:last-child{margin:0}
 .takeaway h3{color:var(--bg); font-size:1rem; font-weight:500; opacity:.75; margin-bottom:1rem}
+/* How to cite */
+.cite-text{font-family:var(--sans); font-size:1rem; line-height:1.6}
+.cite-box{position:relative; background:var(--soft); border:1px solid var(--line); border-radius:12px; margin-top:1.2rem}
+.cite-box pre{margin:0; padding:1.1rem 1.2rem; overflow-x:auto; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:.8rem; line-height:1.6; white-space:pre-wrap; overflow-wrap:anywhere}
+.cite-copy{position:absolute; top:.6rem; right:.6rem; background:var(--surface)}
 footer{padding:3rem 0 4rem; border-top:1px solid var(--line)}
 footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-width:44rem}
 
@@ -208,16 +213,27 @@ footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-widt
 }
 
 /* Loneliness dot plot (own colors, distinct from treatment blue / control amber) */
-#lonelyfig{--ldp-less:#67917B; --ldp-same:var(--muted); --ldp-more:#E5B653}
+#lonelyfig{--ldp-less:#2E9467; --ldp-same:var(--muted); --ldp-same-dot:#B4B8BF; --ldp-more:#C2665A}
 .ldp-readouts{display:flex; flex-wrap:wrap; gap:.4rem 1.8rem; font-family:var(--sans); font-size:.95rem; margin:.4rem 0 .8rem}
 .ldp-readouts div{display:flex; align-items:baseline; gap:.45rem}
 .ldp-readouts b{font-size:1.9rem; font-weight:600; letter-spacing:-0.02em; line-height:1.1; font-variant-numeric:tabular-nums}
 .ldp-readouts .less{color:var(--ldp-less)} .ldp-readouts .same{color:var(--ldp-same)} .ldp-readouts .more{color:var(--ldp-more)}
 .ldp-scroll{overflow-x:auto}
 .ldp-scroll svg{min-width:520px; width:100%; height:auto; display:block}
-.ldp-ticks{display:grid; grid-template-columns:1fr 1fr 1fr; font-family:var(--sans); font-size:.88rem; color:var(--muted); margin-top:.2rem}
-.ldp-ticks span:nth-child(2){text-align:center}
-.ldp-ticks span:nth-child(3){text-align:right}
+.ldp-steps{position:relative; display:flex; justify-content:space-between; font-family:var(--sans); font-size:.88rem; margin-top:.6rem; --p:0}
+.ldp-steps::before,.ldp-steps::after{content:""; position:absolute; top:8px; left:9px; height:2px; margin-top:-1px; border-radius:2px}
+.ldp-steps::before{right:9px; background:var(--line)}
+.ldp-steps::after{width:calc((100% - 18px) * var(--p) / 2); background:var(--treat); transition:width .6s cubic-bezier(.4,0,.2,1)}
+.ldp-steps button{all:unset; position:relative; z-index:1; display:flex; flex-direction:column; align-items:flex-start; gap:.35rem; cursor:pointer; color:var(--muted)}
+.ldp-steps button:nth-child(2){align-items:center}
+.ldp-steps button:nth-child(3){align-items:flex-end}
+.ldp-steps i{width:18px; height:18px; border-radius:50%; background:var(--surface); border:2px solid var(--line); transition:background .3s, border-color .3s, transform .2s}
+.ldp-steps button.done i{border-color:var(--treat)}
+.ldp-steps button:hover i{border-color:var(--treat); transform:scale(1.15)}
+.ldp-steps button[aria-checked="true"]{color:var(--ink); font-weight:600}
+.ldp-steps button[aria-checked="true"] i{background:var(--treat); border-color:var(--treat)}
+.ldp-steps button:focus-visible{outline:none}
+.ldp-steps button:focus-visible i{outline:3px solid var(--treat); outline-offset:3px}
 </style>
 </head>
 <body>
@@ -235,7 +251,7 @@ footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-widt
       and <a href="https://cs.stanford.edu/~diyiy/">Diyi Yang</a><sup>1</sup></p>
     <p class="affil"><sup>1</sup>Stanford University &nbsp; <sup>2</sup>University of Oxford &nbsp; <sup>3</sup>Carnegie Mellon University</p>
     <p class="date">November 20, 2026</p>
-    <p class="paper-link"><a class="btn sm" style="display:inline-block; text-decoration:none" href="paper.pdf">Read the Full Paper</a></p>
+    <p class="paper-link"><a class="btn sm" style="display:inline-block; text-decoration:none" href="https://arxiv.org/abs/2611.25263">Read the Full Paper</a></p>
   </div>
   </div>
 </header>
@@ -307,8 +323,11 @@ footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-widt
         <div><b class="more" id="ldp-more">0.0%</b><span>more lonely</span></div>
       </div>
       <div class="ldp-scroll"><svg id="ldp" viewBox="0 0 720 330" role="img" aria-label="Dot plot of loneliness scores for each participant in the two-week group, from the start of the study to week 2"></svg></div>
-      <input type="range" id="ldp-t" min="0" max="2" step="1" value="0" aria-label="Survey point, from Start to Week 2">
-      <div class="ldp-ticks" aria-hidden="true"><span>Start</span><span>Week 1</span><span>Week 2</span></div>
+      <div class="ldp-steps" id="ldp-t" role="radiogroup" aria-label="Survey point">
+        <button type="button" role="radio" aria-checked="true" tabindex="0" data-t="0"><i></i><span>Start</span></button>
+        <button type="button" role="radio" aria-checked="false" tabindex="-1" data-t="1"><i></i><span>Week 1</span></button>
+        <button type="button" role="radio" aria-checked="false" tabindex="-1" data-t="2"><i></i><span>Week 2</span></button>
+      </div>
     </div>
 
     <div class="prose">
@@ -454,8 +473,27 @@ footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-widt
     <div class="prose">
       <h2>Want the full story?</h2>
       <p>This page covers the highlights. Check out the full paper for additional details and results.</p>
-      <p><a class="btn" style="display:inline-block; text-decoration:none" href="paper.pdf">Read the paper</a></p>
-      <p class="small">Zhao, D., Wang, G., Zhang, Y., Ibrahim, L., Kraut, R. E., and Yang, D. “AI Deactivation Reduces Loneliness and Increases Social Interaction.”</p>
+      <p><a class="btn" style="display:inline-block; text-decoration:none" href="https://arxiv.org/abs/2611.25263">Read the paper</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CITE ============ -->
+<section id="cite">
+  <div class="wrap">
+    <div class="prose">
+      <h2>How to cite</h2>
+      <p>If you use or refer to this work, please cite:</p>
+      <p class="cite-text">Zhao, D., Wang, G., Zhang, Y., Ibrahim, L., Kraut, R. E., &amp; Yang, D. (2026). AI Deactivation Reduces Loneliness and Increases Social Interaction. <em>arXiv preprint arXiv:2611.25263</em>.</p>
+      <div class="cite-box">
+        <button type="button" class="btn ghost sm cite-copy" id="cite-copy">Copy BibTeX</button>
+<pre id="cite-bib">@article{zhao2026deactivation,
+  title   = {AI Deactivation Reduces Loneliness and Increases Social Interaction},
+  author  = {Zhao, Dora and Wang, Grace and Zhang, Yutong and Ibrahim, Lujain and Kraut, Robert E. and Yang, Diyi},
+  journal = {arXiv preprint arXiv:2611.25263},
+  year    = {2026}
+}</pre>
+      </div>
     </div>
   </div>
 </section>
@@ -872,8 +910,8 @@ EffectStrip("eff1",[
      sum scores; use e.g. 0.5 or 0.25 for scales reported as averages. */
   const BIN = 1;
 
-  const svg=document.getElementById("ldp"), slider=document.getElementById("ldp-t");
-  if(!svg||!slider) return;
+  const svg=document.getElementById("ldp"), stepper=document.getElementById("ldp-t");
+  if(!svg||!stepper) return;
   const outLess=document.getElementById("ldp-less"), outSame=document.getElementById("ldp-same"), outMore=document.getElementById("ldp-more");
   const F={"font-family":"var(--sans)"};
 
@@ -962,7 +1000,7 @@ EffectStrip("eff1",[
     txt("text",{...F,x:R,y:16,"text-anchor":"end","font-size":12,"font-weight":600,fill:"var(--muted)"},"Placeholder data",svg);
   }
 
-  const COLORS=["var(--ldp-less)","var(--ldp-same)","var(--ldp-more)"];
+  const COLORS=["var(--ldp-less)","var(--ldp-same-dot)","var(--ldp-more)"];
   const dots=PEOPLE.map(()=>el("circle",{r:r.toFixed(2),stroke:"var(--surface)","stroke-width":(r*0.25).toFixed(2)},svg));
   const pct=c=>(c/n*100).toFixed(1)+"%";
   const NAMES=["Start","Week 1","Week 2"];
@@ -985,11 +1023,20 @@ EffectStrip("eff1",[
     return counts;
   }
 
-  // The slider has three stops (Start, Week 1, Week 2). Dots animate between
-  // stops; with reduced motion they jump straight to the new layout.
-  let shown=+slider.value, anim=null;
+  // Three clickable points (Start, Week 1, Week 2). Dots animate between
+  // points; with reduced motion they jump straight to the new layout.
+  const steps=[...stepper.querySelectorAll("button")];
+  let shown=0, anim=null, stop=0;
+  function setStop(t){
+    t=Math.max(0,Math.min(2,t));
+    steps.forEach(b=>{ const k=+b.dataset.t, on=k===t;
+      b.setAttribute("aria-checked",on); b.tabIndex=on?0:-1; b.classList.toggle("done",k<t); });
+    stepper.style.setProperty("--p",t);
+    if(t===stop) return;
+    stop=t; label(); go();
+  }
   function go(){
-    const target=+slider.value, from=shown, dur=reduceMotion?0:Math.min(900,450*Math.abs(target-from)+250);
+    const target=stop, from=shown, dur=reduceMotion?0:Math.min(900,450*Math.abs(target-from)+250);
     if(anim){ cancelAnimationFrame(anim); anim=null; }
     if(!dur){ shown=target; render(shown); return; }
     const t0=performance.now();
@@ -1003,14 +1050,32 @@ EffectStrip("eff1",[
     anim=requestAnimationFrame(frame);
   }
   function label(){
-    const t=+slider.value, c=[0,0,0];
+    const t=stop, c=[0,0,0];
     PEOPLE.forEach(p=>{ const v=p[1]==null&&t===1?(p[0]+p[2])/2:p[t]; c[sign(v,p[0])]++; });
-    slider.setAttribute("aria-valuetext",`${NAMES[t]}: ${pct(c[0])} less lonely, ${pct(c[1])} no change, ${pct(c[2])} more lonely`);
+    steps.forEach((b,k)=>b.setAttribute("aria-label",k===t?`${NAMES[k]}: ${pct(c[0])} less lonely, ${pct(c[1])} no change, ${pct(c[2])} more lonely`:NAMES[k]));
   }
-  slider.addEventListener("input",()=>{ label(); go(); });
+  steps.forEach(b=>b.addEventListener("click",()=>setStop(+b.dataset.t)));
+  stepper.addEventListener("keydown",e=>{
+    const k=e.key, dir={ArrowRight:1,ArrowDown:1,ArrowLeft:-1,ArrowUp:-1}[k];
+    if(dir==null && k!=="Home" && k!=="End") return;
+    e.preventDefault();
+    setStop(k==="Home"?0:k==="End"?2:stop+dir);
+    steps[stop].focus();
+  });
   render(shown); label();
 })();
 
+</script>
+<script>
+(()=>{
+  const b=document.getElementById("cite-copy"), pre=document.getElementById("cite-bib");
+  if(!b||!pre) return;
+  b.addEventListener("click",async()=>{
+    try{ await navigator.clipboard.writeText(pre.textContent); b.textContent="Copied!"; }
+    catch(e){ const r=document.createRange(); r.selectNodeContents(pre); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); b.textContent="Press ⌘C to copy"; }
+    setTimeout(()=>{ b.textContent="Copy BibTeX"; },2000);
+  });
+})();
 </script>
 <script data-goatcounter="https://dorazhao.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </body>

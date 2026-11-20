@@ -6,12 +6,10 @@ This repository contains the de-identified data and analysis code for "AI Deacti
 Please cite this work as follows:
 ```bibtex
 @misc{zhao2026deactivation,
-  title     = {AI Deactivation Reduces Loneliness and Increases Social Interaction},
-  author    = {Zhao, Dora and Wang, Grace and Zhang, Yutong and Ibrahim, Lujain and Kraut, Robert E. and Yang, Diyi},
-  year      = {2026},
-  publisher = {},
-  doi       = {},
-  url       = {},
+  title   = {AI Deactivation Reduces Loneliness and Increases Social Interaction},
+  author  = {Zhao, Dora and Wang, Grace and Zhang, Yutong and Ibrahim, Lujain and Kraut, Robert E. and Yang, Diyi},
+  journal = {arXiv preprint arXiv:2611.25263},
+  year    = {2026}
 }
 ```
 
