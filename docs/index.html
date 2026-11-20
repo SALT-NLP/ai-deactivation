@@ -96,6 +96,46 @@ section{padding:4.5rem 0; border-top:1px solid var(--line)}
 .readout b{font-weight:600}
 input[type=range]{width:100%; accent-color:var(--treat)}
 
+/* Study flow */
+.flow-head{display:flex; justify-content:space-between; align-items:center; gap:1rem}
+.flow-replay{font-family:var(--sans); font-size:.8rem; color:var(--muted); background:var(--surface); border:1px solid var(--line); border-radius:999px; padding:.3rem .8rem; cursor:pointer}
+.flow-replay:hover{color:var(--ink); border-color:var(--muted)}
+.flow{max-width:30rem; margin:.9rem auto .1rem; font-family:var(--sans); padding:0; list-style:none}
+.fc{position:relative; border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:.45rem .9rem; text-align:center; font-size:.95rem; line-height:1.35; box-shadow:0 1px 2px rgba(0,0,0,.04), 0 4px 14px rgba(0,0,0,.05); cursor:pointer; outline:none; transition:transform .2s ease, box-shadow .2s ease, filter .2s ease; --acc:var(--ink)}
+.fc b{font-weight:600}
+.fc small{display:block; color:var(--muted); font-size:.8rem; margin-top:.05rem}
+.fc .eyebrow{display:inline-block; font-size:.66rem; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); font-weight:600; margin-right:.55rem; vertical-align:.1em}
+.fc .eyebrow::before{content:""; display:inline-block; width:.6em; height:.6em; border-radius:2px; background:var(--ink); margin-right:.45em; vertical-align:.02em}
+.fc.assign{max-width:15rem; margin:0 auto; border-radius:999px; background:var(--soft); border-color:transparent; box-shadow:none}
+.fc.resume{border-style:dashed; box-shadow:none; background:transparent}
+.fc.ctrl{background:var(--ctrl-soft); border-color:var(--ctrl); --acc:var(--ctrl)}
+.fc.ctrl b{color:var(--ctrl)} .fc.ctrl small{color:var(--ctrl); opacity:.85}
+.fc.treat{background:var(--treat); border-color:var(--treat); color:var(--surface); --acc:var(--treat)}
+.fc.treat small{color:var(--surface); opacity:.85}
+.fc.active{transform:translateY(-2px); box-shadow:0 0 0 2px var(--surface), 0 0 0 4px var(--acc), 0 8px 22px rgba(0,0,0,.1)}
+.flow.has-active .fc:not(.active){filter:opacity(.5)}
+.flow-pair{display:grid; grid-template-columns:1fr 1fr; gap:.8rem}
+.fl{position:relative; height:18px}
+.fl.stem{height:9px}
+.fl-line{position:absolute; left:50%; top:0; bottom:0; width:2px; margin-left:-1px; border-radius:2px; background:#CDD1D7; transform-origin:top}
+.flow-bar{height:2px; border-radius:2px; background:#CDD1D7; margin:0 calc(25% - .2rem)}
+.flow-note{text-align:center; max-width:30rem; margin:.6rem auto 0; color:var(--muted)}
+.flow-note b{color:var(--ink)}
+/* Reveal: hidden until .in is added */
+.flow > li{opacity:0}
+.flow .fl-line{transform:scaleY(0)}
+.flow .flow-bar{transform:scaleX(0)}
+.flow.in > li{animation:flowIn .7s ease both; animation-delay:calc(var(--i) * 160ms)}
+.flow.in .fl-line{animation:flowGrowY .45s ease both; animation-delay:calc(var(--i) * 160ms)}
+.flow.in .flow-bar{animation:flowGrowX .45s ease both; animation-delay:calc(var(--i) * 160ms + 150ms)}
+@keyframes flowIn{from{opacity:0; translate:0 10px} to{opacity:1; translate:0 0}}
+@keyframes flowGrowY{from{transform:scaleY(0)} to{transform:scaleY(1)}}
+@keyframes flowGrowX{from{transform:scaleX(0)} to{transform:scaleX(1)}}
+@media (prefers-reduced-motion: reduce){
+  .flow > li{opacity:1} .flow .fl-line{transform:none} .flow .flow-bar{transform:none}
+  .flow-replay{display:none}
+}
+
 /* Prediction */
 .predict{display:flex; flex-wrap:wrap; gap:.6rem; margin:1rem 0}
 .predict button{font-family:var(--sans); font-size:.95rem; border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:999px; padding:.55rem 1.1rem; cursor:pointer}
@@ -121,14 +161,16 @@ input[type=range]{width:100%; accent-color:var(--treat)}
 .eff-dot{position:absolute; top:7px; width:14px; height:14px; margin-left:-7px; border-radius:50%; transition:left .7s cubic-bezier(.4,0,.2,1), background .3s, border-color .3s}
 .eff-dot.sig{background:var(--treat); border:2px solid var(--treat)}
 .eff-dot.ns{background:var(--surface); border:2px solid var(--muted)}
-.eff-side{min-width:0}
+.eff-side{min-width:0; display:grid; align-items:center}
+.eff-side>*{grid-area:1/1}
 .eff-val{font-size:.85rem; color:var(--muted); font-variant-numeric:tabular-nums}
 .eff-val b{color:var(--ink); font-weight:600}
 .eff-val small{display:block; font-size:.78rem}
 .eff-say{font-size:.92rem; line-height:1.4; color:var(--ink)}
 .eff-head{display:grid; grid-template-columns:minmax(8rem,10rem) 1fr minmax(10rem,13rem); gap:1rem; align-items:end; padding:0 0 .4rem; font-size:.8rem; font-weight:500; line-height:1.35; color:var(--muted)}
-.eff.stats .eff-head,.eff.stats .eff-say{display:none}
-.eff:not(.stats) .eff-val{display:none}
+/* Swap with visibility (not display) so toggling stats never changes the plot height */
+.eff.stats .eff-head,.eff.stats .eff-say{visibility:hidden}
+.eff:not(.stats) .eff-val{visibility:hidden}
 .eff-axis{display:grid; grid-template-columns:minmax(8rem,10rem) 1fr minmax(10rem,13rem); gap:1rem; font-size:.8rem; color:var(--muted); margin-top:.4rem}
 .eff-axis div:nth-child(2){display:flex; justify-content:space-between}
 .eff-key{display:flex; gap:1.2rem; font-family:var(--sans); font-size:.82rem; color:var(--muted); margin-top:.9rem; flex-wrap:wrap}
@@ -265,19 +307,48 @@ footer p{font-family:var(--sans); font-size:.88rem; color:var(--muted); max-widt
       <h2>How did we run the experiment?</h2>
       <p>We recruited 625 people in the U.S. who already used ChatGPT at least 15 minutes a day and had accounts on the platform for at least one month.</p>
       <p>Half were assigned to stop using AI chatbots for <span class="t">two weeks</span> (N=306). The other half stopped for just <span class="c">one day</span> (N=319). 
-        We used a browser extension to block access to 30+ popular AI assistants, including ChatGPT, Claude, Gemini, and Perplexity. Our browser extension also monitored compliance with the experiment.
+        We used a browser extension to block access to 30+ popular AI assistants, including ChatGPT, Claude, and Gemini. Our browser extension also monitored compliance with the experiment.
       </p>
     </div>
 
     <div class="prose">
-      The experiment was run over the course of 35 days. In the first week, participants used AI as normal. They completed surveys to get a sense of their baseline levels of well-being, loneliness, and social activity. Then, participants either stopped using AI for two weeks or one day. During the two-week period, we collected daily check-ins from participants and survey measures throughout. Two weeks after our study period, we followed up with participants to assess whether the changes persisted.
+      Everyone first completed a baseline survey measuring their well-being, loneliness, and social activity. Participants were then randomly assigned to stop using AI chatbots for either one day or two weeks, and completed a midpoint survey one week in. At the end of the two weeks, everyone took an endline survey and was free to use AI again. Two weeks later, we followed up with everyone to see whether the changes lasted.
     </div>
 
     <div class="figure">
-      <h3>Drag through the five weeks of the study</h3>
-      <div class="scroll-x"><svg id="timeline" viewBox="0 0 900 205" style="min-width:640px" role="img" aria-label="Study timeline over 35 days"></svg></div>
-      <input type="range" id="day" min="1" max="35" value="1" aria-label="Study day">
-      <div class="readout" id="dayout" aria-live="polite"></div>
+      <div class="flow-head"><h3>How the study worked</h3><button type="button" class="flow-replay" id="flowReplay">↻ Replay</button></div>
+      <ol class="flow" id="flow" aria-label="Study flow: baseline survey, random assignment to a one-day or two-week break, midpoint survey, endline survey, everyone resumes AI use, follow-up survey">
+        <li class="fc survey" tabindex="0" data-note="Everyone starts with a survey measuring their well-being, loneliness, and social activity."><span class="eyebrow">Survey</span><b>Baseline</b><small>625 ChatGPT users</small></li>
+        <li class="fl" aria-hidden="true"><i class="fl-line"></i></li>
+        <li class="fc assign" tabindex="0" data-note="Each participant is randomly assigned to stop using AI chatbots for either one day or two weeks."><b>Random assignment</b></li>
+        <li aria-hidden="true">
+          <div class="fl stem"><i class="fl-line"></i></div>
+          <div class="flow-bar"></div>
+          <div class="flow-pair"><div class="fl"><i class="fl-line"></i></div><div class="fl"><i class="fl-line"></i></div></div>
+        </li>
+        <li class="flow-pair">
+          <div class="fc ctrl" tabindex="0" data-note="Participants stop using AI for one day. This group serves as the control group."><b>One-day break</b><small>319 Participants</small></div>
+          <div class="fc treat" tabindex="0" data-note="Participants stop using AI for two full weeks."><b>Two-week break</b><small>306 participants’</small></div>
+        </li>
+        <li class="flow-pair" aria-hidden="true"><div class="fl"><i class="fl-line"></i></div><div class="fl"><i class="fl-line"></i></div></li>
+        <li class="fc survey" tabindex="0" data-note="All participants complete intermediary surveys, including a midway survey one week into the break."><span class="eyebrow">Survey</span><b>Intermediary Surveys</b></li>
+        <li class="flow-pair" aria-hidden="true"><div class="fl"><i class="fl-line"></i></div><div class="fl"><i class="fl-line"></i></div></li>
+        <li class="flow-pair">
+          <div class="fc ctrl" tabindex="0" data-note="After their one-day break, the one-day group goes back to using AI as usual."><b>Normal AI use</b></div>
+          <div class="fc treat" tabindex="0" data-note="The two-week group stays blocked from AI chatbots for a second week."><b>Break continues</b></div>
+        </li>
+        <li aria-hidden="true">
+          <div class="flow-pair"><div class="fl"><i class="fl-line"></i></div><div class="fl"><i class="fl-line"></i></div></div>
+          <div class="flow-bar"></div>
+          <div class="fl stem"><i class="fl-line"></i></div>
+        </li>
+        <li class="fc survey" tabindex="0" data-note="At the end of the two weeks, everyone completes the endline survey."><span class="eyebrow">Survey</span><b>Endline</b></li>
+        <li class="fl" aria-hidden="true"><i class="fl-line"></i></li>
+        <li class="fc resume" tabindex="0" data-note="The block is lifted and everyone is free to use AI again."><b>Everyone resumes AI use</b></li>
+        <li class="fl" aria-hidden="true"><i class="fl-line"></i></li>
+        <li class="fc survey" tabindex="0" data-note="Two weeks later, everyone completes a follow-up survey so we can see whether the changes lasted."><span class="eyebrow">Survey</span><b>Follow-up</b></li>
+      </ol>
+      <div class="readout flow-note" id="flowNote" aria-live="polite"></div>
     </div>
 
     <div class="prose">
@@ -546,80 +617,30 @@ function el(tag, attrs={}, parent){ const e=document.createElementNS(NS,tag); fo
 function txt(tag, attrs, s, parent){ const e=el(tag,attrs,parent); e.textContent=s; return e; }
 function fmt(v){ const s=Math.abs(v).toFixed(2); return (v<0?"−":v>0?"+":"")+s; }
 
-/* ---------- Timeline ---------- */
+/* ---------- Study flow ---------- */
 (function(){
-  const svg=document.getElementById("timeline");
-  const out=document.getElementById("dayout"), slider=document.getElementById("day");
-  const mq=window.matchMedia("(max-width:760px)");
-  const F={ "font-family":"var(--sans)" };
-  const daily=[4,8,9,11,12,13,15,16,18,19,20];
-  const surveys=[[1,"Start"],[10,"Interim"],[14,"Midpoint"],[17,"Interim"],[21,"End"],[35,"Follow-up"]];
-  let X=d=>d, cursor, cl, viewW=900;
-  function describe(d){
-    if(d===1) return "<b>Day 1.</b> Everyone takes the baseline survey, covering all of the measures we collected during the study.";
-    if(d<8) return `<b>Day ${d}.</b> A normal week. Everyone keeps using AI as usual${d===4?", and answers a daily check-in on their emotional state, daily social activity, and daily work activity":""}.`;
-    if(d===8) return "<b>Day 8.</b> All participants stop using AI assistants. For the one-day group, they can resume using AI assistants after one day.";
-    if(d<=21){ let s=`<b>Day ${d}.</b> The two-week group is still blocked from using AI assistants. The one-day group is back to normal.`;
-      if(d===10||d===17) s+=" Everyone takes a short interim survey.";
-      else if(d===14) s+=" Everyone takes the midpoint survey.";
-      else if(d===21) s=`<b>Day 21.</b> The study period ends. Everyone takes the endline survey.`;
-      else if(daily.includes(d)) s+=" Everyone answers a daily check-in about who they talked to and how they spent their time.";
-      return s; }
-    if(d<35) return `<b>Day ${d}.</b> Everyone is free to use AI again.`;
-    return "<b>Day 35.</b> Two weeks after the study period, everyone takes the follow-up survey.";
+  const flow=document.getElementById("flow"), note=document.getElementById("flowNote");
+  const DEFAULT="Hover or tap a step to learn more.";
+  [...flow.children].forEach((li,i)=>li.style.setProperty("--i",i));
+  const cards=[...flow.querySelectorAll(".fc")];
+  function show(card){
+    cards.forEach(c=>c.classList.toggle("active",c===card));
+    flow.classList.toggle("has-active",!!card);
+    note.innerHTML=card?`<b>${card.querySelector("b").textContent}.</b> ${card.dataset.note}`:DEFAULT;
   }
-  function anchorAt(x){ return x<36 ? "start" : x>viewW-46 ? "end" : "middle"; }
-  function paint(){
-    const narrow=mq.matches;
-    svg.innerHTML="";
-    svg.style.minWidth=narrow?"0":"640px";
-    const x0=narrow?16:150, w=narrow?308:720, vbW=narrow?340:900, vbH=narrow?268:205;
-    viewW=vbW;
-    svg.setAttribute("viewBox",`0 0 ${vbW} ${vbH}`);
-    X=d=>x0+(d-1)*(w/34);
-    const cell=w/34, L=d=>X(d)-cell/2;
-    const phases=[[1,7,"Pre-Study"],[8,21,"Study Period"],[22,35,"Post-Study"]];
-    phases.forEach(([a,b,s])=>{
-      el("line",{x1:L(a)+3,x2:L(b+1)-3,y1:22,y2:22,stroke:"var(--ink)","stroke-width":1.5},svg);
-      txt("text",{...F,x:(L(a)+L(b+1))/2,y:14,"text-anchor":"middle","font-size":narrow?11:13,"font-weight":600,fill:"var(--ink)"},s,svg);
-    });
-    const yOne=narrow?50:38, yTwo=narrow?96:76;
-    if(narrow){
-      txt("text",{...F,x:L(1),y:42,"font-size":11,"font-weight":600,fill:"var(--ctrl)"},"One-day group",svg);
-      txt("text",{...F,x:L(1),y:88,"font-size":11,"font-weight":600,fill:"var(--treat)"},"Two-week group",svg);
-    }else{
-      txt("text",{...F,x:x0-14,y:52,"text-anchor":"end","font-size":13,"font-weight":600,fill:"var(--ctrl)"},"One-day group",svg);
-      txt("text",{...F,x:x0-14,y:90,"text-anchor":"end","font-size":13,"font-weight":600,fill:"var(--treat)"},"Two-week group",svg);
-    }
-    el("rect",{x:L(1),y:yOne,width:L(36)-L(1),height:narrow?16:20,rx:5,fill:"var(--ctrl-soft)"},svg);
-    el("rect",{x:L(8),y:yOne,width:cell,height:narrow?16:20,rx:4,fill:"var(--ctrl)"},svg);
-    el("rect",{x:L(1),y:yTwo,width:L(36)-L(1),height:narrow?16:20,rx:5,fill:"var(--treat-soft)"},svg);
-    el("rect",{x:L(8),y:yTwo,width:L(22)-L(8),height:narrow?16:20,rx:4,fill:"var(--treat)"},svg);
-    txt("text",{...F,x:(L(8)+L(22))/2,y:yTwo+(narrow?12:14.5),"text-anchor":"middle","font-size":narrow?9:12,"font-weight":600,fill:"var(--surface)"},narrow?"14 days, no chatbots":"No chatbots for 14 days",svg);
-    const yDaily=narrow?148:123, ySurvey=narrow?186:149;
-    txt("text",{...F,x:narrow?L(1):x0-14,y:narrow?136:127,"text-anchor":narrow?"start":"end","font-size":narrow?11:12,fill:"var(--muted)"},"Daily check-ins",svg);
-    daily.forEach(d=>el("circle",{cx:X(d),cy:yDaily,r:narrow?3.5:4.5,fill:"var(--human)"},svg));
-    txt("text",{...F,x:narrow?L(1):x0-14,y:narrow?174:159,"text-anchor":narrow?"start":"end","font-size":narrow?11:12,fill:"var(--muted)"},"Surveys",svg);
-    surveys.forEach(([d,s])=>{
-      el("rect",{x:X(d)-(narrow?4:6),y:ySurvey,width:narrow?8:12,height:narrow?8:12,rx:2,fill:"var(--ink)"},svg);
-      const interim=narrow && (d===10||d===17);
-      const yLab=narrow?(interim?214:232):180;
-      txt("text",{...F,x:X(d),y:yLab,"text-anchor":narrow?anchorAt(X(d)):"middle","font-size":narrow?10:11,fill:"var(--muted)"},s,svg);
-    });
-    cursor=el("line",{y1:28,y2:narrow?196:190,stroke:"var(--ink)","stroke-width":2},svg);
-    cl=txt("text",{...F,y:narrow?256:202,"text-anchor":"middle","font-size":11,"font-weight":600,fill:"var(--ink)"},"Day 1",svg);
-    upd();
-  }
-  function upd(){
-    const d=+slider.value, x=X(d);
-    cursor.setAttribute("x1",x); cursor.setAttribute("x2",x);
-    const lx=Math.max(22, Math.min(x, viewW-22));
-    cl.setAttribute("x",lx); cl.setAttribute("text-anchor", lx===22?"start":lx===viewW-22?"end":"middle");
-    cl.textContent="Day "+d; out.innerHTML=describe(d);
-  }
-  slider.addEventListener("input",upd);
-  mq.addEventListener("change",paint);
-  paint();
+  cards.forEach(c=>{
+    c.addEventListener("mouseenter",()=>show(c));
+    c.addEventListener("focus",()=>show(c));
+    c.addEventListener("click",()=>show(c));
+  });
+  flow.addEventListener("mouseleave",()=>{ if(!flow.contains(document.activeElement)) show(null); });
+  flow.addEventListener("focusout",e=>{ if(!flow.contains(e.relatedTarget)) show(null); });
+  show(null);
+  function play(){ flow.classList.remove("in"); void flow.offsetWidth; flow.classList.add("in"); }
+  document.getElementById("flowReplay").addEventListener("click",play);
+  if(reduceMotion || !("IntersectionObserver" in window)){ flow.classList.add("in"); return; }
+  const io=new IntersectionObserver(es=>{ if(es.some(e=>e.isIntersecting)){ play(); io.disconnect(); } },{threshold:.25});
+  io.observe(flow);
 })();
 
 /* ---------- Uses ---------- */
